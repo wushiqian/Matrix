@@ -7,11 +7,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,13 +24,22 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.shiqian.photoedit.utils.MatisseGlide;
+import com.yalantis.ucrop.UCrop;
+import com.yalantis.ucrop.UCropActivity;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
@@ -39,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     List<Uri> mSelected;
     private Uri photo = null;
+    private Uri destinationUri = null;
 
     private Button mButton;
     private ImageView mImageView;
@@ -134,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
         Bitmap bmp = null;
         try {
-            bmp = BitmapFactory.decodeStream(getContentResolver().openInputStream(mSelected.get(0)));
+            bmp = BitmapFactory.decodeStream(getContentResolver().openInputStream(photo));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -226,18 +238,88 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             mSelected = Matisse.obtainResult(data);
+            destinationUri = mSelected.get(0);
             Log.d("Matisse", "mSelected: " + mSelected);
+            startCrop();
             Bitmap bitmap = null;
             try {
-                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(mSelected.get(0)));
+                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(destinationUri));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            mImageView.setImageBitmap(bitmap);
-            hueSeekBar.setProgress(MID_VALUE);
-            satSeekBar.setProgress(MID_VALUE);
-            lumSeekBar.setProgress(MID_VALUE);
+//            mImageView.setImageBitmap(bitmap);
         }
+        if (resultCode == RESULT_OK) {
+            //裁切成功
+            if (requestCode == UCrop.REQUEST_CROP) {
+                Uri croppedFileUri = UCrop.getOutput(data);
+                //获取默认的下载目录
+                String downloadsDirectoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+                String filename = String.format("%d_%s", Calendar.getInstance().getTimeInMillis(), croppedFileUri.getLastPathSegment());
+                File saveFile = new File(downloadsDirectoryPath, filename);
+                //保存下载的图片
+                FileInputStream inStream = null;
+                FileOutputStream outStream = null;
+                FileChannel inChannel = null;
+                FileChannel outChannel = null;
+                try {
+                    inStream = new FileInputStream(new File(croppedFileUri.getPath()));
+                    outStream = new FileOutputStream(saveFile);
+                    inChannel = inStream.getChannel();
+                    outChannel = outStream.getChannel();
+                    inChannel.transferTo(0, inChannel.size(), outChannel);
+                    Toast.makeText(this, "裁切后的图片保存在：" + saveFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    // 使用Glide显示图片
+                    Glide.with(this)
+                            .load(UCrop.getOutput(data))
+                            .into(mImageView);
+                    photo = UCrop.getOutput(data);
+                    hueSeekBar.setProgress(MID_VALUE);
+                    satSeekBar.setProgress(MID_VALUE);
+                    lumSeekBar.setProgress(MID_VALUE);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        outChannel.close();
+                        outStream.close();
+                        inChannel.close();
+                        inStream.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        //裁切失败
+        if (resultCode == UCrop.RESULT_ERROR) {
+            Toast.makeText(this, "裁切图片失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void startCrop() {
+        Uri sourceUri = mSelected.get(0);
+        //裁剪后保存到文件中
+        Uri destinationUri = Uri.fromFile(new File(getCacheDir(), "SampleCropImage.jpeg"));
+        UCrop uCrop = UCrop.of(sourceUri, destinationUri);
+        // 修改配置参数
+        UCrop.Options options = new UCrop.Options();
+        // 修改标题栏颜色
+        options.setToolbarColor(getResources().getColor(R.color.zhihu_primary));
+        // 修改状态栏颜色
+        options.setStatusBarColor(getResources().getColor(R.color.zhihu_primary));
+        //设置裁剪图片可操作的手势
+        options.setAllowedGestures(UCropActivity.SCALE, UCropActivity.ROTATE, UCropActivity.ALL);
+        //设置图片在切换比例时的动画
+        options.setImageToCropBoundsAnimDuration(666);
+        //设置最大缩放比例
+        options.setMaxScaleMultiplier(5);
+        //设置裁剪框横竖线的颜色
+//        options.setCropGridColor(Color.GREEN);
+        uCrop.withOptions(options);
+        uCrop = uCrop.useSourceImageAspectRatio();
+        uCrop.withMaxResultSize(500, 500)
+                .start(this);
     }
 
 }
