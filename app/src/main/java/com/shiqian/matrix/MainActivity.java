@@ -22,18 +22,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.shiqian.matrix.view.DrawingView;
 import com.shiqian.photoedit.utils.MatisseGlide;
 import com.yalantis.ucrop.UCrop;
@@ -70,15 +65,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private Uri photo = null;
     private Bitmap mBitmap;
 
-    private GridLayout mGridGroup;
-//    private DrawingView mImageView;
     private SeekBar hueSeekBar;
     private SeekBar satSeekBar;
     private SeekBar lumSeekBar;
-    private int mEtWidth = 0;
-    private int mEtHeight = 0;
-    private float[] mColorMatrix = new float[20];
-    private EditText[] mETs = new EditText[20];
     private float mHue = 0.0f;
     private float mSaturation = 1f;
     private float mLum = 1f;
@@ -138,10 +127,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private void initView() {
         mDrawingView = findViewById(R.id.iv_main);
-        mBrush = (ImageButton) findViewById(R.id.brush);
-        mColorPanel = (ImageButton) findViewById(R.id.color_panel);
-        mUndo = (ImageButton) findViewById(R.id.undo);
-        mSave = (ImageButton) findViewById(R.id.save);
+        mBrush = findViewById(R.id.brush);
+        mColorPanel = findViewById(R.id.color_panel);
+        mUndo = findViewById(R.id.undo);
+        mSave = findViewById(R.id.save);
 
         mBrush.setOnClickListener(this);
         mColorPanel.setOnClickListener(this);
@@ -162,69 +151,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         hueSeekBar.setOnSeekBarChangeListener(this);
         satSeekBar.setOnSeekBarChangeListener(this);
         lumSeekBar.setOnSeekBarChangeListener(this);
-//        mImageView = findViewById(R.id.iv_main);
-        mGridGroup = findViewById(R.id.grid_group);
-        mGridGroup.post(new Runnable() {
-            @Override
-            public void run() {
-                mEtWidth = mGridGroup.getWidth() / 5;
-                mEtHeight = mGridGroup.getHeight() / 4;
-                addEts();
-                initMatrix();
-            }
-        });
-    }
-
-    private void addEts() {
-        for (int i = 0; i < 20; i++) {
-            EditText et = new EditText(this);
-            et.setGravity(Gravity.CENTER);
-            mETs[i] = et;
-            mGridGroup.addView(et, mEtWidth, mEtHeight);
-        }
-    }
-
-    private void getMatrix() {
-        for (int i = 0; i < 20; i++) {
-            mColorMatrix[i] = Float.valueOf(mETs[i].getText().toString());
-        }
-    }
-
-    private void initMatrix() {
-        for (int i = 0; i < 20; i++) {
-            if (i % 6 == 0) {
-                mETs[i].setText(String.valueOf(1));
-            } else {
-                mETs[i].setText(String.valueOf(0));
-            }
-        }
-    }
-
-    public void btnChange(View view) {
-        getMatrix();
-        setImageMatrix();
-    }
-
-    public void btnReset(View view) {
-        initMatrix();
-        getMatrix();
-        setImageMatrix();
-    }
-
-    private void setImageMatrix() {
-        try {
-            mBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(photo));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Bitmap bmp = Bitmap.createBitmap(mBitmap.getWidth(), mBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        android.graphics.ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.set(mColorMatrix);
-        Canvas canvas = new Canvas(bmp);
-        Paint paint = new Paint();
-        paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
-        canvas.drawBitmap(mBitmap, 0, 0, paint);
-        mDrawingView.loadImage(bmp);
     }
 
 
@@ -356,7 +282,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-//            mImageView.setImageBitmap(mBitmap);
         }
         if (resultCode == RESULT_OK) {
             //裁切成功
@@ -444,7 +369,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     public void btnNegative(View view) {
-//        mImageView.setImageBitmap(handleImageNegative(mBitmap));
         mDrawingView.loadImage(handleImageNegative(mBitmap));
     }
 
@@ -492,7 +416,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     public void btnOld(View view) {
-//        mImageView.setImageBitmap(handleImageOld(mBitmap));
         mDrawingView.loadImage(handleImageOld(mBitmap));
     }
 
@@ -525,7 +448,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     public void btnEmboss(View view) {
-//        mImageView.setImageBitmap(handleImageEmboss(mBitmap));
         mDrawingView.loadImage(handleImageEmboss(mBitmap));
     }
 
@@ -576,7 +498,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
         mBitmap = resizedBitmap;
-//        mImageView.setImageBitmap(resizedBitmap);
         mDrawingView.loadImage(mBitmap);
     }
 
@@ -587,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         int height = mBitmap.getHeight();
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
         mBitmap = resizedBitmap;
-//        mImageView.setImageBitmap(mBitmap);
+        mDrawingView.loadImage(mBitmap);
     }
 
     public void btnTranslate(View view) {
@@ -597,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
         mBitmap = resizedBitmap;
-//        mImageView.setImageBitmap(mBitmap);
+        mDrawingView.loadImage(mBitmap);
     }
 
     public void btnSkew(View view) {
@@ -607,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
         mBitmap = resizedBitmap;
-//        mImageView.setImageBitmap(mBitmap);
+        mDrawingView.loadImage(mBitmap);
     }
 
     @Override
@@ -629,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.save:
                 String sdcardPath = Environment.getExternalStorageDirectory().toString();
                 if (mDrawingView.saveImage(sdcardPath, "DrawImg", Bitmap.CompressFormat.PNG, 100)){
-                    Toast.makeText(this, "Save Success", Toast.LENGTH_SHORT).show();
+                    Toasty.success(this, "Save Success", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
