@@ -20,7 +20,7 @@
     <com.shiqian.matrix.view.DrawingView
         android:id="@+id/iv_main"
         android:layout_width="400dp"
-        android:layout_height="600dp"
+        android:layout_height="500dp"
         android:layout_gravity="center" />
 
     <RelativeLayout

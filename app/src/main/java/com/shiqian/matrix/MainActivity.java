@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     private void initView() {
-        StatusBarUtil.setColor(this,getResources().getColor(R.color.zhihu_primary));
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
 
         detailsBar = findViewById(R.id.details_bar);
         filterBar = findViewById(R.id.filter_bar);
@@ -238,10 +238,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 break;
             case R.id.sb_rotate:
 //                mBitmap = PhotoUtils.rotateImage(mBitmap,progress);
-                mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap,progress));
+                mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, progress));
                 break;
         }
-        if(isChanged) mDrawingView.loadImage(PhotoUtils.handleImageEffect(mBitmap, mHue, mSaturation, mLum));
+        if (isChanged)
+            mDrawingView.loadImage(PhotoUtils.handleImageEffect(mBitmap, mHue, mSaturation, mLum));
     }
 
     //申请权限回调
@@ -294,8 +295,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 //                        .load(croppedFileUri)
 //                        .into(mImageView);
 //                mBitmap = PhotoUtils.ScaleImage(mBitmap,2,2);
-                Intent intent = new Intent();
-                intent.putExtra(StaticUtils.NOW_PHOTO,mBitmap);
+                mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
                 mDrawingView.loadImage(mBitmap);
                 mDrawingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 photo = croppedFileUri;
@@ -486,23 +486,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     public void btnRotate(View view) {
-        mBitmap = PhotoUtils.rotateImage(mBitmap,60);
-        mDrawingView.loadImage(mBitmap);
+        mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, 90));
     }
 
     public void btnReRotate(View view) {
-        mBitmap = PhotoUtils.rotateImage(mBitmap,-90);
-        mDrawingView.loadImage(mBitmap);
+        mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, -90));
     }
 
     public void btnScale(View view) {
-        mBitmap = PhotoUtils.ScaleImage(mBitmap,2,2);
-        mDrawingView.loadImage(mBitmap);
+        mDrawingView.loadImage(PhotoUtils.ScaleImage(mBitmap, 2, 2));
     }
 
     public void btnTranslate(View view) {
         Matrix matrix = new Matrix();
-        matrix.setTranslate(100,100);
+        matrix.setTranslate(100, 100);
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
@@ -512,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     public void btnSkew(View view) {
         Matrix matrix = new Matrix();
-        matrix.setSkew(2,2);
+        matrix.setSkew(2, 2);
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
@@ -538,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 break;
             case R.id.save:
                 String sdcardPath = Environment.getExternalStorageDirectory().toString();
-                if (mDrawingView.saveImage(sdcardPath, "DrawImg", Bitmap.CompressFormat.PNG, 100)){
+                if (mDrawingView.saveImage(sdcardPath, "DrawImg", Bitmap.CompressFormat.PNG, 100)) {
                     Toasty.success(this, "Save Success", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -546,12 +543,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 close();
                 okBar.setVisibility(FILTER == 0 ? View.VISIBLE : View.GONE);
                 filterBar.setVisibility(FILTER == 0 ? View.VISIBLE : View.GONE);
+                if(FILTER == 0) allZero();
                 FILTER = 1 - FILTER;
                 break;
             case R.id.details:
                 close();
                 okBar.setVisibility(DETAILS == 0 ? View.VISIBLE : View.GONE);
                 detailsBar.setVisibility(DETAILS == 0 ? View.VISIBLE : View.GONE);
+                if (DETAILS == 0) allZero();
                 DETAILS = 1 - DETAILS;
                 break;
             case R.id.Crop:
@@ -559,21 +558,26 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 okBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
                 rotateBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
                 cropBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
+                if (CROP == 0) allZero();
                 CROP = 1 - CROP;
                 break;
             case R.id.Draw:
                 close();
-                if(DRAW == 0) mDrawingView.NoDrawMode();
+                if (DRAW == 0) mDrawingView.NoDrawMode();
                 else mDrawingView.DrawMode();
                 okBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
                 paintBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
+                if (DRAW == 0) allZero();
                 DRAW = 1 - DRAW;
                 break;
             case R.id.OK:
                 mBitmap = mDrawingView.getImageBitmap();
+                allZero();
                 close();
                 break;
             case R.id.Cancel:
+                mDrawingView.loadImage(mBitmap);
+                allZero();
                 close();
                 break;
             default:
@@ -581,13 +585,21 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
     }
 
+    private void allZero() {
+        FILTER = 0;
+        CROP = 0;
+        DETAILS = 0;
+        DRAW = 0;
+    }
+
     private void close() {
-        if(filterBar.getVisibility() == View.VISIBLE) filterBar.setVisibility(View.GONE);
-        if(okBar.getVisibility() == View.VISIBLE) okBar.setVisibility(View.GONE);
-        if(paintBar.getVisibility() == View.VISIBLE) paintBar.setVisibility(View.GONE);
-        if(cropBar.getVisibility() == View.VISIBLE) cropBar.setVisibility(View.GONE);
-        if(rotateBar.getVisibility() == View.VISIBLE) rotateBar.setVisibility(View.GONE);
-        if(detailsBar.getVisibility() == View.VISIBLE) detailsBar.setVisibility(View.GONE);
+        if (okBar.getVisibility() == View.VISIBLE) okBar.setVisibility(View.GONE);
+        if (filterBar.getVisibility() == View.VISIBLE) filterBar.setVisibility(View.GONE);
+        else if (paintBar.getVisibility() == View.VISIBLE) paintBar.setVisibility(View.GONE);
+        else if (cropBar.getVisibility() == View.VISIBLE) {
+            cropBar.setVisibility(View.GONE);
+            rotateBar.setVisibility(View.GONE);
+        } else if (detailsBar.getVisibility() == View.VISIBLE) detailsBar.setVisibility(View.GONE);
     }
 }
 

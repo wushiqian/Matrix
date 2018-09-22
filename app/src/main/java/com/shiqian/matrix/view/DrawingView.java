@@ -257,7 +257,6 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     }
 
     /**
-     * 保存图片，其实我个人建议在其他类里面写保存方法，{@link #getImageBitmap()}就是内容
      *
      * @param filePath 路径名
      * @param filename 文件名
