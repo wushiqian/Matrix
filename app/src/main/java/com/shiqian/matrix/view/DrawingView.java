@@ -6,6 +6,7 @@ package com.shiqian.matrix.view;
  * 创建时间 2018/9/21 下午6:49
  * 描述： TODO//
  */
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -19,14 +20,14 @@ import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
-public class DrawingView extends View {
+public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     private static final String TAG = "DrawingView";
     private static final float TOUCH_TOLERANCE = 4;
     private Bitmap mBitmap;
@@ -43,6 +44,14 @@ public class DrawingView extends View {
     private Matrix matrix;
     private float mPaintBarPenSize;
     private int mPaintBarPenColor;
+
+    public void NoDrawMode(){
+        mDrawMode = false;
+    }
+
+    public void DrawMode(){
+        mDrawMode = true;
+    }
 
     public DrawingView(Context c) {
         this(c, null);
@@ -111,13 +120,14 @@ public class DrawingView extends View {
             mProportion = 0;
             canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
         }
+        setScaleType(ImageView.ScaleType.CENTER_INSIDE);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // 如果你的界面有多个模式，你需要有个变量来判断当前是否可draw
-        if (!mDrawMode) {
-            return false;
+        if (mDrawMode) {
+            return true;
         }
         float x;
         float y;
@@ -222,7 +232,8 @@ public class DrawingView extends View {
         Log.d(TAG, "loadImage: ");
         mOriginBitmap = bitmap;
         mBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        mCanvas = new Canvas(mBitmap);
+//        mCanvas = new Canvas(mBitmap);
+        setImageBitmap(mBitmap);
         invalidate();
     }
 

@@ -17,140 +17,168 @@
 
     </android.support.v7.widget.Toolbar>
 
-    <FrameLayout
+    <com.shiqian.matrix.view.DrawingView
+        android:id="@+id/iv_main"
         android:layout_width="400dp"
-        android:layout_height="400dp"
-        android:background="@color/translucent">
+        android:layout_height="600dp"
+        android:layout_gravity="center" />
 
-        <com.shiqian.matrix.view.DrawingView
-            android:id="@+id/iv_main"
-            android:layout_width="400dp"
-            android:layout_height="400dp" />
-
-    </FrameLayout>
-
-    <ScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:layout_above="@+id/ok_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/details_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="色调：  " />
+
+                    <android.support.v7.widget.AppCompatSeekBar
+                        android:id="@+id/sb_hue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="饱和度:" />
+
+                    <android.support.v7.widget.AppCompatSeekBar
+                        android:id="@+id/sb_saturation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="亮度：  " />
+
+                    <android.support.v7.widget.AppCompatSeekBar
+                        android:id="@+id/sb_lum"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rotate_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingTop="5dp">
+                android:paddingTop="5dp"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="色调：  " />
+                    android:text="旋转" />
 
                 <android.support.v7.widget.AppCompatSeekBar
-                    android:id="@+id/sb_hue"
+                    android:id="@+id/sb_rotate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="5dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="饱和度：" />
-
-                <android.support.v7.widget.AppCompatSeekBar
-                    android:id="@+id/sb_saturation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="5dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="亮度：  " />
-
-                <android.support.v7.widget.AppCompatSeekBar
-                    android:id="@+id/sb_lum"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
+                android:id="@+id/filter_bar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <Button
-                    android:text="底片效果"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnNegative"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="底片效果" />
 
                 <Button
-                    android:text="老照片效果"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnOld"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="老照片效果" />
 
                 <Button
-                    android:text="浮雕效果"
-                    android:onClick="btnEmboss"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:onClick="btnEmboss"
+                    android:text="浮雕效果" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
+                android:id="@+id/crop_bar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <Button
-                    android:text="旋转"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnRotate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="旋转" />
 
                 <Button
-                    android:text="反向旋转"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnReRotate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="反向旋转" />
 
                 <Button
-                    android:text="放大两倍"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnScale"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="放大两倍" />
 
                 <Button
-                    android:text="平移"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="btnTranslate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:text="平移" />
 
                 <Button
-                    android:text="错切"
-                    android:onClick="btnSkew"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:onClick="btnSkew"
+                    android:text="错切" />
 
             </LinearLayout>
 
@@ -159,7 +187,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/lightBlack"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <ImageButton
                     android:id="@+id/brush"
@@ -197,6 +226,74 @@
 
         </LinearLayout>
 
-    </ScrollView>
+        <LinearLayout
+            android:id="@+id/ok_bar"
+            android:visibility="gone"
+            android:orientation="horizontal"
+            android:layout_above="@+id/main_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/Cancel"
+                style="@style/ButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_close_24dp"
+                android:layout_weight="1"/>
+
+            <ImageButton
+                android:id="@+id/OK"
+                style="@style/ButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_check_24dp"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/main_bar"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lightBlack"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/filter"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_filter_24dp" />
+
+            <ImageButton
+                android:id="@+id/details"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_details_24dp" />
+
+            <ImageButton
+                android:id="@+id/Crop"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_crop_24dp" />
+
+            <ImageButton
+                android:id="@+id/Draw"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_draw_24dp" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>
