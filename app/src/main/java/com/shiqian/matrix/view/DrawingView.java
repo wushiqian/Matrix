@@ -30,13 +30,16 @@ import java.util.LinkedList;
 public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     private static final String TAG = "DrawingView";
     private static final float TOUCH_TOLERANCE = 4;
+    private final int DRAWING = 2;
+    public static final int CANTDRAW = 0;
+    public static final int CANDRAW = 1;
     private Bitmap mBitmap;
     private Bitmap mOriginBitmap;
     private Canvas mCanvas;
     private Path mPath;
     private Paint mBitmapPaint;
     private Paint mPaint;
-    private boolean mDrawMode;
+    private int mDrawMode;
     private float mX, mY;
     private float mProportion = 0;
     private LinkedList<DrawPath> savePath;
@@ -45,12 +48,8 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     private float mPaintBarPenSize;
     private int mPaintBarPenColor;
 
-    public void NoDrawMode(){
-        mDrawMode = false;
-    }
-
-    public void DrawMode(){
-        mDrawMode = true;
+    public void setDrawMode(int drawMode){
+        mDrawMode = drawMode;
     }
 
     public DrawingView(Context c) {
@@ -69,7 +68,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     private void init() {
         Log.d(TAG, "init: ");
         mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-        mDrawMode = false;
+        mDrawMode = CANTDRAW;
         savePath = new LinkedList<>();
         matrix = new Matrix();
     }
@@ -126,8 +125,8 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // 如果你的界面有多个模式，你需要有个变量来判断当前是否可draw
-        if (mDrawMode) {
-            return true;
+        if (mDrawMode == CANTDRAW) {
+            return false;
         }
         float x;
         float y;
@@ -177,7 +176,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     }
 
     public void initializePen() {
-        mDrawMode = true;
+        mDrawMode = CANTDRAW;
         mPaint = null;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -232,7 +231,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         Log.d(TAG, "loadImage: ");
         mOriginBitmap = bitmap;
         mBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-//        mCanvas = new Canvas(mBitmap);
+        mCanvas = new Canvas(mBitmap);
         setImageBitmap(mBitmap);
         invalidate();
     }
@@ -252,6 +251,16 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
                 mPaint.setStrokeWidth(dp.getPaintWidth());
                 mCanvas.drawPath(dp.path, mPaint);
             }
+            invalidate();
+        }
+    }
+
+    public void clear() {
+        Log.d(TAG, "clear the path");
+        if (savePath != null && savePath.size() > 0) {
+            // 清空画布
+            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            loadImage(mOriginBitmap);
             invalidate();
         }
     }

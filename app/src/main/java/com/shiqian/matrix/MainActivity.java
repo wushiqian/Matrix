@@ -1,18 +1,23 @@
 package com.shiqian.matrix;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.EmbossMaskFilter;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -29,7 +34,6 @@ import android.widget.Toast;
 
 import com.jaeger.library.StatusBarUtil;
 import com.shiqian.matrix.utils.PhotoUtils;
-import com.shiqian.matrix.utils.StaticUtils;
 import com.shiqian.matrix.view.DrawingView;
 import com.shiqian.photoedit.utils.MatisseGlide;
 import com.yalantis.ucrop.UCrop;
@@ -48,10 +52,14 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
+//TODO 分享，保存
+//FIXME 旋转
+
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
     private static final String FILE_PATH = "com.shiqian.matrix.fileprovider";
     private static final String TAG = "MainActivity";
+    private String shareString = "分享照片";
     private int REQUEST_CODE_CHOOSE = 2;
 
     private DrawingView mDrawingView;
@@ -141,10 +149,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                             .imageEngine(new MatisseGlide())
                             .forResult(REQUEST_CODE_CHOOSE);
                 }
+                break;
+            case R.id.share:
+                shareImage(this, photo, shareString);
         }
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
 
@@ -237,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 isChanged = true;
                 break;
             case R.id.sb_rotate:
-//                mBitmap = PhotoUtils.rotateImage(mBitmap,progress);
                 mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, progress));
                 break;
         }
@@ -453,32 +464,54 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mDrawingView.loadImage(handleImageEmboss(mBitmap));
     }
 
-    private Bitmap handleImageEmboss(Bitmap bm) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        int color, color2;
-        int r, g, b, a, r1, g1, b1;
-
+    /**
+     * 浮雕效果
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap handleImageEmboss(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int color = 0, preColor = 0, a, r, g, b;
+        int r1, g1, b1;
         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         int[] oldPx = new int[width * height];
         int[] newPx = new int[width * height];
-        bm.getPixels(oldPx, 0, width, 0, 0, width, height);
-        for (int i = 0; i < width * height - 1; i++) {
+        bitmap.getPixels(oldPx, 0, width, 0, 0, width, height);
+        for (int i = 1; i < oldPx.length; i++) {
+            preColor = oldPx[i-1];
+            a = Color.alpha(preColor);
+            r = Color.red(preColor);
+            g = Color.green(preColor);
+            b = Color.blue(preColor);
+
             color = oldPx[i];
-            color2 = oldPx[i];
-            r = Color.red(color);
-            g = Color.green(color);
-            b = Color.blue(color);
-            a = Color.alpha(color);
-            r1 = Color.red(color2);
-            g1 = Color.green(color2);
-            b1 = Color.blue(color2);
+            r1 = Color.red(color);
+            g1 = Color.green(color);
+            b1 = Color.blue(color);
 
             r = r1 - r + 127;
             g = g1 - g + 127;
             b = b1 - b + 127;
 
+            if (r > 255) {
+                r = 255;
+            } else if (r < 0){
+                r = 0;
+            }
+
+            if (g > 255) {
+                g = 255;
+            } else if (g < 0){
+                g = 0;
+            }
+
+            if (b > 255) {
+                b = 255;
+            } else if (b < 0){
+                b = 0;
+            }
             newPx[i] = Color.argb(a, r, g, b);
         }
         bmp.setPixels(newPx, 0, width, 0, 0, width, height);
@@ -487,6 +520,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     public void btnRotate(View view) {
         mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, 90));
+        mBitmap = PhotoUtils.rotateImage(mBitmap, 90);
     }
 
     public void btnReRotate(View view) {
@@ -543,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 close();
                 okBar.setVisibility(FILTER == 0 ? View.VISIBLE : View.GONE);
                 filterBar.setVisibility(FILTER == 0 ? View.VISIBLE : View.GONE);
-                if(FILTER == 0) allZero();
+                if (FILTER == 0) allZero();
                 FILTER = 1 - FILTER;
                 break;
             case R.id.details:
@@ -563,8 +597,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 break;
             case R.id.Draw:
                 close();
-                if (DRAW == 0) mDrawingView.NoDrawMode();
-                else mDrawingView.DrawMode();
+                mDrawingView.setDrawMode(DrawingView.CANDRAW);
+                if (DRAW == 1) mDrawingView.setDrawMode(DrawingView.CANTDRAW);
                 okBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
                 paintBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
                 if (DRAW == 0) allZero();
@@ -573,11 +607,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.OK:
                 mBitmap = mDrawingView.getImageBitmap();
                 allZero();
+                mDrawingView.setDrawMode(DrawingView.CANTDRAW);
                 close();
                 break;
             case R.id.Cancel:
                 mDrawingView.loadImage(mBitmap);
+                mDrawingView.clear();
                 allZero();
+                mDrawingView.setDrawMode(DrawingView.CANTDRAW);
                 close();
                 break;
             default:
@@ -600,6 +637,17 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             cropBar.setVisibility(View.GONE);
             rotateBar.setVisibility(View.GONE);
         } else if (detailsBar.getVisibility() == View.VISIBLE) detailsBar.setVisibility(View.GONE);
+    }
+
+    public static void shareImage(Context context, Uri uri, String title) {
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        builder.detectFileUriExposure();
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        shareIntent.setType("image/jpeg");
+        context.startActivity(Intent.createChooser(shareIntent, title));
     }
 }
 
