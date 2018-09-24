@@ -11,4 +11,5 @@ public class StaticUtils {
 
     public static String NOW_PHOTO = "NowPhoto";
 
+    public static String BUGLY_APP_ID = "f6d8cd7845";
 }

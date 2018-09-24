@@ -36,6 +36,7 @@ import com.jaeger.library.StatusBarUtil;
 import com.shiqian.matrix.utils.PhotoUtils;
 import com.shiqian.matrix.view.DrawingView;
 import com.shiqian.photoedit.utils.MatisseGlide;
+import com.tencent.bugly.crashreport.CrashReport;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 import com.zhihu.matisse.Matisse;
@@ -156,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
 
@@ -543,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     public void btnSkew(View view) {
         Matrix matrix = new Matrix();
-        matrix.setSkew(2, 2);
+        matrix.setSkew(0.5f, 2);
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight(); // 创建新的图片
         Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
