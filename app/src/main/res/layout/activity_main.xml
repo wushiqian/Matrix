@@ -141,6 +141,18 @@
                     android:onClick="btnEmboss"
                     android:text="浮雕效果" />
 
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="btnPolaroid"
+                    android:text="宝丽来" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="btnCool"
+                    android:text="怀旧" />
+
             </LinearLayout>
 
             <LinearLayout

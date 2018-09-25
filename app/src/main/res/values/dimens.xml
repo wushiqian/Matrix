@@ -10,4 +10,5 @@
      larger than the minimum reported touchMajor/touchMinor values
      reported by the hardware. -->
     <dimen name="androids_api27_config_minScalingSpan">27mm</dimen>
+    <dimen name="media_big_size">120dp</dimen>
 </resources>

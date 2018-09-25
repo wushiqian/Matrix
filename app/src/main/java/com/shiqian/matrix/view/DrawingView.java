@@ -30,30 +30,50 @@ import java.util.LinkedList;
 public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     private static final String TAG = "DrawingView";
     private static final float TOUCH_TOLERANCE = 4;
+
+    /**
+     * 模式
+     */
+    private int mDrawMode;
     private final int DRAWING = 2;
     public static final int CANTDRAW = 0;
     public static final int CANDRAW = 1;
+
+    //目标bitmap
     private Bitmap mBitmap;
+    //原始bitmap
     private Bitmap mOriginBitmap;
     private Canvas mCanvas;
+
     private Path mPath;
     private Paint mBitmapPaint;
     private Paint mPaint;
-    private int mDrawMode;
     private float mX, mY;
     private float mProportion = 0;
+    //保存的涂鸦路径
     private LinkedList<DrawPath> savePath;
+    //上一条涂鸦路径
     private DrawPath mLastDrawPath;
     private Matrix matrix;
+
+    //画笔大小和颜色
     private float mPaintBarPenSize;
     private int mPaintBarPenColor;
 
-    public void setDrawMode(int drawMode){
+    /**
+     * 设置模式
+     * @param drawMode 模式
+     */
+    public void setDrawMode(int drawMode) {
         mDrawMode = drawMode;
     }
 
-    public DrawingView(Context c) {
-        this(c, null);
+    /**
+     * 构造函数
+     * @param context 上下文
+     */
+    public DrawingView(Context context) {
+        this(context, null);
     }
 
     public DrawingView(Context c, AttributeSet attrs) {
@@ -124,7 +144,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // 如果你的界面有多个模式，你需要有个变量来判断当前是否可draw
+        // 多个模式，判断当前是否可draw
         if (mDrawMode == CANTDRAW) {
             return false;
         }
@@ -175,6 +195,9 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         return true;
     }
 
+    /**
+     * 初始化画笔
+     */
     public void initializePen() {
         mDrawMode = CANTDRAW;
         mPaint = null;
@@ -195,25 +218,33 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     }
 
     /**
-     * This method should ONLY be called by clicking paint toolbar(outer class)
+     * 设置画笔大小
      */
     public void setPenSize(float size) {
         mPaintBarPenSize = size;
         mPaint.setStrokeWidth(size);
     }
 
+    /**
+     * 获取画笔大小
+     * @return 画笔大小
+     */
     public float getPenSize() {
         return mPaint.getStrokeWidth();
     }
 
     /**
-     * This method should ONLY be called by clicking paint toolbar(outer class)
+     * 设置画笔颜色
      */
     public void setPenColor(@ColorInt int color) {
         mPaintBarPenColor = color;
         mPaint.setColor(color);
     }
 
+    /**
+     * 获取画笔颜色
+     * @return 画笔颜色
+     */
     public
     @ColorInt
     int getPenColor() {
@@ -227,6 +258,10 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         return mBitmap;
     }
 
+    /**
+     * 加载图片
+     * @param bitmap
+     */
     public void loadImage(Bitmap bitmap) {
         Log.d(TAG, "loadImage: ");
         mOriginBitmap = bitmap;
@@ -236,6 +271,9 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         invalidate();
     }
 
+    /**
+     * 撤销上一步
+     */
     public void undo() {
         Log.d(TAG, "undo: recall last path");
         if (savePath != null && savePath.size() > 0) {
@@ -255,6 +293,9 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         }
     }
 
+    /**
+     * 清空画布
+     */
     public void clear() {
         Log.d(TAG, "clear the path");
         if (savePath != null && savePath.size() > 0) {
@@ -266,7 +307,6 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     }
 
     /**
-     *
      * @param filePath 路径名
      * @param filename 文件名
      * @param format   存储格式

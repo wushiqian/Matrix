@@ -10,6 +10,7 @@ package com.shiqian.matrix;
 import android.app.Application;
 import android.graphics.Color;
 
+import com.mob.MobSDK;
 import com.shiqian.matrix.utils.StaticUtils;
 import com.tencent.bugly.crashreport.CrashReport;
 
@@ -22,6 +23,7 @@ public class BaseApplication extends Application {
         super.onCreate();
         //初始化Bugly
         CrashReport.initCrashReport(getApplicationContext(), StaticUtils.BUGLY_APP_ID, true);
+        MobSDK.init(this);
         Toasty.Config.getInstance()
                 .setErrorColor(Color.RED) // optional
                 .setInfoColor(Color.BLUE) // optional

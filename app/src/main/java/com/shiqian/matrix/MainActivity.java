@@ -7,8 +7,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.EmbossMaskFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -17,7 +19,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +37,6 @@ import com.jaeger.library.StatusBarUtil;
 import com.shiqian.matrix.utils.PhotoUtils;
 import com.shiqian.matrix.view.DrawingView;
 import com.shiqian.photoedit.utils.MatisseGlide;
-import com.tencent.bugly.crashreport.CrashReport;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 import com.zhihu.matisse.Matisse;
@@ -53,23 +53,42 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-//TODO 分享，保存
+//TODO 分享，保存, 手势
 //FIXME 旋转
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
+    /**
+     * DATA
+     */
     private static final String FILE_PATH = "com.shiqian.matrix.fileprovider";
     private static final String TAG = "MainActivity";
-    private String shareString = "分享照片";
     private int REQUEST_CODE_CHOOSE = 2;
 
-    private DrawingView mDrawingView;
+    //按钮状态
     private static int COLOR_PANEL = 0;
     private static int BRUSH = 0;
     private static int FILTER = 0;
     private static int DETAILS = 0;
     private static int CROP = 0;
     private static int DRAW = 0;
+
+    private List<Uri> mSelected;
+    private Uri photo = null;
+    private Bitmap mBitmap;
+
+    private float mHue = 0.0f;
+    private float mSaturation = 1f;
+    private float mLum = 1f;
+    private int MID_VALUE = 127;
+    private int MAX_VALUE = 255;
+
+    private static final int REQUEST_PERMISSION_CODE = 0;
+
+    /**
+     * UI
+     */
+    private DrawingView mDrawingView;
     private ImageButton mColorPanel;
     private ImageButton mBrush;
     private ImageButton mUndo;
@@ -80,30 +99,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private ImageButton mDraw;
     private ImageButton mOK;
     private ImageButton mCancel;
-
-    List<Uri> mSelected;
-    private Uri photo = null;
-    private Bitmap mBitmap;
-
     private SeekBar hueSeekBar;
     private SeekBar satSeekBar;
     private SeekBar lumSeekBar;
     private SeekBar rotateSeekBar;
-
     private LinearLayout detailsBar;
     private LinearLayout rotateBar;
     private LinearLayout filterBar;
     private LinearLayout cropBar;
     private LinearLayout paintBar;
     private LinearLayout okBar;
-
-    private float mHue = 0.0f;
-    private float mSaturation = 1f;
-    private float mLum = 1f;
-    private int MID_VALUE = 127;
-    private int MAX_VALUE = 255;
-
-    private static final int REQUEST_PERMISSION_CODE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         initPaintMode();
     }
 
+    /**
+     * 初始化模式
+     */
     private void initPaintMode() {
         mDrawingView.initializePen();
         mDrawingView.setPenSize(10);
@@ -121,11 +129,22 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
     }
 
+    /**
+     * 加载菜单
+     *
+     * @param menu 菜单
+     * @return 是否有菜单
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
         return true;
     }
 
+    /**
+     * 菜单点击事件
+     *
+     * @param item 子选项
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -152,11 +171,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 }
                 break;
             case R.id.share:
+                String shareString = "分享照片";
                 shareImage(this, photo, shareString);
+                break;
         }
         return true;
     }
 
+    /**
+     * 初始化界面
+     */
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
 
@@ -205,7 +229,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         lumSeekBar.setMax(MAX_VALUE);
         satSeekBar.setMax(MAX_VALUE);
         rotateSeekBar.setMax(180);
-        rotateSeekBar.setMin(-180);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            rotateSeekBar.setMin(-180);
+        }
         rotateSeekBar.setProgress(0);
         hueSeekBar.setProgress(MID_VALUE);
         satSeekBar.setProgress(MID_VALUE);
@@ -219,12 +245,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 
     /*
@@ -305,8 +329,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 //                Glide.with(this)
 //                        .load(croppedFileUri)
 //                        .into(mImageView);
-//                mBitmap = PhotoUtils.ScaleImage(mBitmap,2,2);
-                mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
+//                mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
                 mDrawingView.loadImage(mBitmap);
                 mDrawingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 photo = croppedFileUri;
@@ -381,6 +404,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 .start(this);
     }
 
+    /**
+     *
+     * 滤镜
+     *
+     */
     public void btnNegative(View view) {
         mDrawingView.loadImage(handleImageNegative(mBitmap));
     }
@@ -464,10 +492,63 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mDrawingView.loadImage(handleImageEmboss(mBitmap));
     }
 
+    public void btnPolaroid(View view) {
+        mDrawingView.loadImage(handleImagePolaroid(mBitmap));
+    }
+
+    public void btnCool(View view) {
+        mDrawingView.loadImage(handleImageCool(mBitmap));
+    }
+
+    private Bitmap handleImageCool(Bitmap bitmap) {
+        int width, height;
+        width = bitmap.getWidth();
+        height = bitmap.getHeight();
+
+        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(bmp);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true); // 设置抗锯齿
+        float[] array = {0.393f,0.769f,0.189f,0,0,
+                0.349f,0.686f,0.168f,0,0,
+                0.272f,0.534f,0.131f,0,0,
+                0,0,0,1,0};
+        ColorMatrix colorMatrix = new ColorMatrix(array);
+
+        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+        paint.setColorFilter(filter);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+
+        return bmp;
+    }
+
+    private Bitmap handleImagePolaroid(Bitmap bitmap) {
+        int width, height;
+        width = bitmap.getWidth();
+        height = bitmap.getHeight();
+
+        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(bmp);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true); // 设置抗锯齿
+
+        float[] array = {1.438f, -0.062f, -0.062f, 0, 0,
+                -0.122f, 1.378f, -0.122f, 0, 0,
+                -0.016f, -0.016f, 1.483f, 0, 0,
+                -0.03f, 0.05f, -0.02f, 1, 0};
+        ColorMatrix colorMatrix = new ColorMatrix(array);
+
+        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+        paint.setColorFilter(filter);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+
+        return bmp;
+    }
+
     /**
      * 浮雕效果
-     * @param bitmap
-     * @return
+     * @param bitmap 初始bitmap
+     * @return 目标bitmap
      */
     public static Bitmap handleImageEmboss(Bitmap bitmap) {
         int width = bitmap.getWidth();
@@ -480,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         int[] newPx = new int[width * height];
         bitmap.getPixels(oldPx, 0, width, 0, 0, width, height);
         for (int i = 1; i < oldPx.length; i++) {
-            preColor = oldPx[i-1];
+            preColor = oldPx[i - 1];
             a = Color.alpha(preColor);
             r = Color.red(preColor);
             g = Color.green(preColor);
@@ -497,19 +578,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
             if (r > 255) {
                 r = 255;
-            } else if (r < 0){
+            } else if (r < 0) {
                 r = 0;
             }
 
             if (g > 255) {
                 g = 255;
-            } else if (g < 0){
+            } else if (g < 0) {
                 g = 0;
             }
 
             if (b > 255) {
                 b = 255;
-            } else if (b < 0){
+            } else if (b < 0) {
                 b = 0;
             }
             newPx[i] = Color.argb(a, r, g, b);
@@ -525,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     public void btnReRotate(View view) {
         mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, -90));
+        mBitmap = PhotoUtils.rotateImage(mBitmap, -90);
     }
 
     public void btnScale(View view) {
@@ -649,5 +731,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         shareIntent.setType("image/jpeg");
         context.startActivity(Intent.createChooser(shareIntent, title));
     }
+
 }
 

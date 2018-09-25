@@ -1,4 +1,57 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.mob.sdk'
+
+MobSDK {
+    appKey "2800aef795a42"
+    appSecret "ca7a197c7a8513c6e99aac3a901e16e9"
+    ShareSDK {
+        devInfo {
+            SinaWeibo {
+                appKey "568898243"
+                appSecret "38a4f8204cc784f81f9f0daaf31e02e3"
+                callbackUri "http://www.sharesdk.cn"
+                shareByAppClient true
+            }
+            Douban {
+                appKey "031a96a3aa8b28af094fc3eaffa17a0d"
+                appSecret "2e675e730571b75d"
+                callbackUri "http://mob.com"
+            }
+            Evernote {
+                hostType "sandbox"
+                appKey "sharesdk-7807"
+                appSecret "d05bf86993836004"
+                shareByAppClient true
+            }
+            Instagram {
+                appId "ff68e3216b4f4f989121aa1c2962d058"
+                appSecret "1b2e82f110264869b3505c3fe34e31a1"
+                callbackUri "http://www.sharesdk.cn"
+            }
+            Wechat {
+                appId "wx4868b35061f87885"
+                appSecret "64020361b8ec4c99936c0e3999a9f249"
+                userName "gh_afb25ac019c9"
+                path "pages/index/index.html?id=1"
+                withShareTicket true
+                miniprogramType 2
+                bypassApproval false
+            }
+            QQ {
+                appId "100371282"
+                appKey "aed9b0303e3ed1e27bae87c33761161d"
+                shareByAppClient true
+                bypassApproval false
+            }
+            YouDao {
+                hostType "product"
+                appKey "dcde25dca105bcc36884ed4534dab940"
+                appSecret "d98217b4020e7f1874263795f44838fe"
+                callbackUri "http://www.sharesdk.cn"
+            }
+        }
+    }
+}
 
 android {
     compileSdkVersion 27
