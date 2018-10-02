@@ -7,17 +7,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -34,9 +30,12 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.jaeger.library.StatusBarUtil;
+import com.shiqian.matrix.utils.FilterUtils;
 import com.shiqian.matrix.utils.PhotoUtils;
 import com.shiqian.matrix.view.DrawingView;
+import com.shiqian.matrix.view.TransformativeImageView;
 import com.shiqian.photoedit.utils.MatisseGlide;
+import com.xw.repo.BubbleSeekBar;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 import com.zhihu.matisse.Matisse;
@@ -54,7 +53,7 @@ import java.util.List;
 import es.dmoral.toasty.Toasty;
 
 //TODO 分享，保存, 手势
-//FIXME 旋转
+//FIXME
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
@@ -88,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * UI
      */
-    private DrawingView mDrawingView;
+    private TransformativeImageView mDrawingView;
     private ImageButton mColorPanel;
     private ImageButton mBrush;
     private ImageButton mUndo;
@@ -102,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private SeekBar hueSeekBar;
     private SeekBar satSeekBar;
     private SeekBar lumSeekBar;
-    private SeekBar rotateSeekBar;
+    private BubbleSeekBar rotateSeekBar;
     private LinearLayout detailsBar;
     private LinearLayout rotateBar;
     private LinearLayout filterBar;
@@ -172,11 +171,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 break;
             case R.id.share:
                 String shareString = "分享照片";
-                shareImage(this, photo, shareString);
+                shareImage(shareString);
                 break;
         }
         return true;
     }
+
 
     /**
      * 初始化界面
@@ -192,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         okBar = findViewById(R.id.ok_bar);
 
         mDrawingView = findViewById(R.id.iv_main);
-        mDrawingView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-
+//        mBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+//        mDrawingView.loadImage(mBitmap);
         mBrush = findViewById(R.id.brush);
         mColorPanel = findViewById(R.id.color_panel);
         mUndo = findViewById(R.id.undo);
@@ -228,10 +228,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         hueSeekBar.setMax(MAX_VALUE);
         lumSeekBar.setMax(MAX_VALUE);
         satSeekBar.setMax(MAX_VALUE);
-        rotateSeekBar.setMax(180);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            rotateSeekBar.setMin(-180);
-        }
+//        rotateSeekBar.setMax(180);
+//        rotateSeekBar.setMin(-180);
         rotateSeekBar.setProgress(0);
         hueSeekBar.setProgress(MID_VALUE);
         satSeekBar.setProgress(MID_VALUE);
@@ -239,9 +237,27 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         hueSeekBar.setOnSeekBarChangeListener(this);
         satSeekBar.setOnSeekBarChangeListener(this);
         lumSeekBar.setOnSeekBarChangeListener(this);
-        rotateSeekBar.setOnSeekBarChangeListener(this);
-    }
+        rotateSeekBar.setOnProgressChangedListener((new BubbleSeekBar.OnProgressChangedListener() {
+            @Override
+            public void onProgressChanged(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat, boolean fromUser) {
+                switch (bubbleSeekBar.getId()) {
+                    case R.id.sb_rotate:
+                        mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, progress));
+                        break;
+                }
+            }
 
+            @Override
+            public void getProgressOnActionUp(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
+
+            }
+
+            @Override
+            public void getProgressOnFinally(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat, boolean fromUser) {
+
+            }
+        }));
+    }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -271,9 +287,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.sb_lum:
                 mLum = progress * 1.0F / MID_VALUE;
                 isChanged = true;
-                break;
-            case R.id.sb_rotate:
-                mDrawingView.loadImage(PhotoUtils.rotateImage(mBitmap, progress));
                 break;
         }
         if (isChanged)
@@ -327,11 +340,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 }
                 // 使用Glide显示图片
 //                Glide.with(this)
-//                        .load(croppedFileUri)
-//                        .into(mImageView);
-//                mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
+//                        .load(mBitmap)
+//                        .into(mDrawingView);
+//                mDrawingView.loadImage(mBitmap);
+                mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
                 mDrawingView.loadImage(mBitmap);
-                mDrawingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 photo = croppedFileUri;
                 hueSeekBar.setProgress(MID_VALUE);
                 satSeekBar.setProgress(MID_VALUE);
@@ -340,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
         //裁切失败
         if (resultCode == UCrop.RESULT_ERROR) {
-            Toast.makeText(this, "裁切图片失败", Toast.LENGTH_SHORT).show();
+            Toasty.error(this, "裁切图片失败", Toast.LENGTH_SHORT, true).show();
         }
     }
 
@@ -400,203 +413,34 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 //        options.setCropGridColor(Color.GREEN);
         uCrop.withOptions(options);
         uCrop = uCrop.useSourceImageAspectRatio();
-        uCrop.withMaxResultSize(800, 800)
-                .start(this);
+        uCrop.withMaxResultSize(800, 800).start(this);
     }
 
     /**
-     *
      * 滤镜
-     *
      */
     public void btnNegative(View view) {
-        mDrawingView.loadImage(handleImageNegative(mBitmap));
-    }
-
-    private Bitmap handleImageNegative(Bitmap bm) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        int color;
-        int r, g, b, a;
-
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] oldPx = new int[width * height];
-        int[] newPx = new int[width * height];
-        bm.getPixels(oldPx, 0, width, 0, 0, width, height);
-        for (int i = 0; i < width * height; i++) {
-            color = oldPx[i];
-            r = Color.red(color);
-            g = Color.green(color);
-            b = Color.blue(color);
-            a = Color.alpha(color);
-
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-
-            if (r > 255) {
-                r = 255;
-            } else if (r < 0) {
-                r = 0;
-            }
-            if (g > 255) {
-                g = 255;
-            } else if (g < 0) {
-                g = 0;
-            }
-            if (b > 255) {
-                b = 255;
-            } else if (b < 0) {
-                b = 0;
-            }
-            newPx[i] = Color.argb(a, r, g, b);
-        }
-        bmp.setPixels(newPx, 0, width, 0, 0, width, height);
-        return bmp;
+        mDrawingView.loadImage(FilterUtils.handleImageNegative(mBitmap));
     }
 
     public void btnOld(View view) {
-        mDrawingView.loadImage(handleImageOld(mBitmap));
-    }
-
-    private Bitmap handleImageOld(Bitmap bm) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        int color;
-        int r, g, b, a;
-
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] oldPx = new int[width * height];
-        int[] newPx = new int[width * height];
-        bm.getPixels(oldPx, 0, width, 0, 0, width, height);
-        for (int i = 0; i < width * height; i++) {
-            color = oldPx[i];
-            r = Color.red(color);
-            g = Color.green(color);
-            b = Color.blue(color);
-            a = Color.alpha(color);
-
-            r = (int) (0.393 * r + 0.769 * g + 0.189 * b);
-            g = (int) (0.349 * r + 0.686 * g + 0.168 * b);
-            b = (int) (0.272 * r + 0.534 * g + 0.131 * b);
-
-            newPx[i] = Color.argb(a, r, g, b);
-        }
-        bmp.setPixels(newPx, 0, width, 0, 0, width, height);
-        return bmp;
+        mDrawingView.loadImage(FilterUtils.handleImageOld(mBitmap));
     }
 
     public void btnEmboss(View view) {
-        mDrawingView.loadImage(handleImageEmboss(mBitmap));
+        mDrawingView.loadImage(FilterUtils.handleImageEmboss(mBitmap));
     }
 
     public void btnPolaroid(View view) {
-        mDrawingView.loadImage(handleImagePolaroid(mBitmap));
+        mDrawingView.loadImage(FilterUtils.handleImagePolaroid(mBitmap));
     }
 
     public void btnCool(View view) {
-        mDrawingView.loadImage(handleImageCool(mBitmap));
+        mDrawingView.loadImage(FilterUtils.handleImageCool(mBitmap));
     }
 
-    private Bitmap handleImageCool(Bitmap bitmap) {
-        int width, height;
-        width = bitmap.getWidth();
-        height = bitmap.getHeight();
-
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        Canvas canvas = new Canvas(bmp);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true); // 设置抗锯齿
-        float[] array = {0.393f,0.769f,0.189f,0,0,
-                0.349f,0.686f,0.168f,0,0,
-                0.272f,0.534f,0.131f,0,0,
-                0,0,0,1,0};
-        ColorMatrix colorMatrix = new ColorMatrix(array);
-
-        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
-        paint.setColorFilter(filter);
-        canvas.drawBitmap(bitmap, 0, 0, paint);
-
-        return bmp;
-    }
-
-    private Bitmap handleImagePolaroid(Bitmap bitmap) {
-        int width, height;
-        width = bitmap.getWidth();
-        height = bitmap.getHeight();
-
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        Canvas canvas = new Canvas(bmp);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true); // 设置抗锯齿
-
-        float[] array = {1.438f, -0.062f, -0.062f, 0, 0,
-                -0.122f, 1.378f, -0.122f, 0, 0,
-                -0.016f, -0.016f, 1.483f, 0, 0,
-                -0.03f, 0.05f, -0.02f, 1, 0};
-        ColorMatrix colorMatrix = new ColorMatrix(array);
-
-        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
-        paint.setColorFilter(filter);
-        canvas.drawBitmap(bitmap, 0, 0, paint);
-
-        return bmp;
-    }
-
-    /**
-     * 浮雕效果
-     * @param bitmap 初始bitmap
-     * @return 目标bitmap
-     */
-    public static Bitmap handleImageEmboss(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int color = 0, preColor = 0, a, r, g, b;
-        int r1, g1, b1;
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] oldPx = new int[width * height];
-        int[] newPx = new int[width * height];
-        bitmap.getPixels(oldPx, 0, width, 0, 0, width, height);
-        for (int i = 1; i < oldPx.length; i++) {
-            preColor = oldPx[i - 1];
-            a = Color.alpha(preColor);
-            r = Color.red(preColor);
-            g = Color.green(preColor);
-            b = Color.blue(preColor);
-
-            color = oldPx[i];
-            r1 = Color.red(color);
-            g1 = Color.green(color);
-            b1 = Color.blue(color);
-
-            r = r1 - r + 127;
-            g = g1 - g + 127;
-            b = b1 - b + 127;
-
-            if (r > 255) {
-                r = 255;
-            } else if (r < 0) {
-                r = 0;
-            }
-
-            if (g > 255) {
-                g = 255;
-            } else if (g < 0) {
-                g = 0;
-            }
-
-            if (b > 255) {
-                b = 255;
-            } else if (b < 0) {
-                b = 0;
-            }
-            newPx[i] = Color.argb(a, r, g, b);
-        }
-        bmp.setPixels(newPx, 0, width, 0, 0, width, height);
-        return bmp;
+    public void btnNeon(View view) {
+        mDrawingView.loadImage(FilterUtils.handleImageNeon(mBitmap));
     }
 
     public void btnRotate(View view) {
@@ -679,8 +523,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 break;
             case R.id.Draw:
                 close();
-                mDrawingView.setDrawMode(DrawingView.CANDRAW);
-                if (DRAW == 1) mDrawingView.setDrawMode(DrawingView.CANTDRAW);
+//                mDrawingView.setImageBitmap(mBitmap);
+                mDrawingView.loadImage(mBitmap);
+//                Intent intent = new Intent(this,PaintActivity.class);
+//                startActivity(intent);
+                mDrawingView.setDrawMode(DrawingView.DRAW);
+                if (DRAW == 1) mDrawingView.setDrawMode(DrawingView.SCALE);
+                mDrawingView.loadImage(mBitmap);
                 okBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
                 paintBar.setVisibility(DRAW == 0 ? View.VISIBLE : View.GONE);
                 if (DRAW == 0) allZero();
@@ -689,14 +538,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.OK:
                 mBitmap = mDrawingView.getImageBitmap();
                 allZero();
-                mDrawingView.setDrawMode(DrawingView.CANTDRAW);
+                mDrawingView.setDrawMode(DrawingView.SCALE);
                 close();
                 break;
             case R.id.Cancel:
                 mDrawingView.loadImage(mBitmap);
                 mDrawingView.clear();
                 allZero();
-                mDrawingView.setDrawMode(DrawingView.CANTDRAW);
+                mDrawingView.setDrawMode(DrawingView.SCALE);
                 close();
                 break;
             default:
@@ -721,16 +570,17 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         } else if (detailsBar.getVisibility() == View.VISIBLE) detailsBar.setVisibility(View.GONE);
     }
 
-    public static void shareImage(Context context, Uri uri, String title) {
+    public void shareImage(String title) {
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         builder.detectFileUriExposure();
-        Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-        shareIntent.setType("image/jpeg");
-        context.startActivity(Intent.createChooser(shareIntent, title));
+        Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), mBitmap, null,null));
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);//设置分享行为
+        intent.setType("image/*");//设置分享内容的类型
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        intent = Intent.createChooser(intent, title);
+        startActivity(intent);
     }
 
 }
-

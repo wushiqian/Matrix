@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TransformativeImageView">
+        <attr name="max_scale" format="float" />
+        <attr name="min_scale" format="float" />
+        <attr name="revert_duration" format="integer" />
+        <attr name="open_scale_revert" format="boolean"/>
+        <attr name="open_rotate_revert" format="boolean"/>
+        <attr name="open_translate_revert" format="boolean"/>
+        <attr name="open_animator" format="boolean" />
+        <attr name="scale_center" format="enum">
+            <enum name="img_center" value="0" />
+            <enum name="finger_center" value="1" />
+        </attr>
+    </declare-styleable>
+</resources>

@@ -10,27 +10,34 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="@color/colorPrimary"
         android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
     </android.support.v7.widget.Toolbar>
 
-    <com.shiqian.matrix.view.DrawingView
+    <com.shiqian.matrix.view.TransformativeImageView
         android:id="@+id/iv_main"
-        android:layout_width="400dp"
-        android:layout_height="500dp"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="520dp"
+        app:open_rotate_revert="true"
+        app:open_scale_revert="true"
+        app:open_translate_revert="true"
+        app:revert_duration="300"
+        app:max_scale="4"
+        app:min_scale="1"
+        app:scale_center="finger_center"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_above="@+id/ok_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/ok_bar"
             android:orientation="vertical">
 
             <LinearLayout
@@ -109,10 +116,23 @@
                     android:layout_height="wrap_content"
                     android:text="旋转" />
 
-                <android.support.v7.widget.AppCompatSeekBar
+                <com.xw.repo.BubbleSeekBar
                     android:id="@+id/sb_rotate"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    app:bsb_bubble_color="@color/blue"
+                    app:bsb_bubble_text_color="@color/colorPrimaryDark"
+                    app:bsb_section_count="9"
+                    app:bsb_max="180.0"
+                    app:bsb_min="-180"
+                    app:bsb_progress="0"
+                    app:bsb_second_track_color="@color/color_red"
+                    app:bsb_section_text_position="bottom_sides"
+                    app:bsb_show_progress_in_float="true"
+                    app:bsb_show_section_mark="true"
+                    app:bsb_show_section_text="true"
+                    app:bsb_show_thumb_text="true"
+                    app:bsb_track_color="@color/color_red_light" />
 
             </LinearLayout>
 
@@ -152,6 +172,12 @@
                     android:layout_height="wrap_content"
                     android:onClick="btnCool"
                     android:text="怀旧" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="btnNeon"
+                    android:text="霓虹" />
 
             </LinearLayout>
 
@@ -240,35 +266,35 @@
 
         <LinearLayout
             android:id="@+id/ok_bar"
-            android:visibility="gone"
-            android:orientation="horizontal"
-            android:layout_above="@+id/main_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/main_bar"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/Cancel"
                 style="@style/ButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_close_24dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:src="@drawable/ic_close_24dp" />
 
             <ImageButton
                 android:id="@+id/OK"
                 style="@style/ButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_check_24dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:src="@drawable/ic_check_24dp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/main_bar"
-            android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:background="@color/lightBlack"
             android:orientation="horizontal">
 

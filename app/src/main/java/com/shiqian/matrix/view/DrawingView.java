@@ -20,7 +20,6 @@ import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,16 +27,16 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class DrawingView extends android.support.v7.widget.AppCompatImageView {
+
     private static final String TAG = "DrawingView";
     private static final float TOUCH_TOLERANCE = 4;
 
     /**
      * 模式
      */
-    private int mDrawMode;
-    private final int DRAWING = 2;
-    public static final int CANTDRAW = 0;
-    public static final int CANDRAW = 1;
+    private int mMode;
+    public static final int SCALE = 0;
+    public static final int DRAW = 1;
 
     //目标bitmap
     private Bitmap mBitmap;
@@ -62,44 +61,47 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
 
     /**
      * 设置模式
+     *
      * @param drawMode 模式
      */
     public void setDrawMode(int drawMode) {
-        mDrawMode = drawMode;
+        mMode = drawMode;
     }
 
     /**
      * 构造函数
+     *
      * @param context 上下文
      */
     public DrawingView(Context context) {
         this(context, null);
     }
 
-    public DrawingView(Context c, AttributeSet attrs) {
-        this(c, attrs, 0);
+    public DrawingView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
     }
 
-    public DrawingView(Context c, AttributeSet attrs, int defStyle) {
-        super(c, attrs, defStyle);
+    public DrawingView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
         init();
+        initializePen();
     }
 
     private void init() {
         Log.d(TAG, "init: ");
         mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-        mDrawMode = CANTDRAW;
+        mMode = SCALE;
         savePath = new LinkedList<>();
         matrix = new Matrix();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
+        int widthSize = getMeasureWidth(widthMeasureSpec);
+        int heightSize = getMeasureHeight(heightMeasureSpec);
         if (mBitmap != null) {
             if ((mBitmap.getHeight() > heightSize) && (mBitmap.getHeight() > mBitmap.getWidth())) {
                 widthSize = heightSize * mBitmap.getWidth() / mBitmap.getHeight();
@@ -110,8 +112,42 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
                 widthSize = mBitmap.getWidth();
             }
         }
-        Log.d(TAG, "onMeasure: heightSize: " + heightSize + " widthSize: " + widthSize);
-        setMeasuredDimension(widthSize, heightSize);
+        setMeasuredDimension(widthSize, heightSize);  //必须调用此方法，否则会抛出异常
+
+    }
+
+    private int getMeasureHeight(int heightMeasureSpec) {
+        int result = 0;
+        int size = MeasureSpec.getSize(heightMeasureSpec);  //每次调用此方法，测量用到的size会发生变化
+        int mode = MeasureSpec.getMode(heightMeasureSpec);  //根据定义的Layout_width,Layout_height，会对此值产生影响
+        if (mode == MeasureSpec.EXACTLY) {
+            result = size;
+        } else if (mode == MeasureSpec.UNSPECIFIED) {
+            result = (int) mPaint.measureText("") + getPaddingLeft()
+                    + getPaddingRight();
+        } else {
+            result = Math.min(result, size);
+        }
+        System.out.println("Height size:" + size);
+        System.out.println("Height mode:" + mode);
+        return result;
+    }
+
+    private int getMeasureWidth(int widthMeasureSpec) {
+        int result = 0;
+        int size = MeasureSpec.getSize(widthMeasureSpec);
+        int mode = MeasureSpec.getMode(widthMeasureSpec);
+        if (mode == MeasureSpec.EXACTLY) {
+            result = size;
+        } else if (mode == MeasureSpec.UNSPECIFIED) {
+            result = (int) mPaint.measureText("") + getPaddingTop()
+                    + getPaddingBottom();
+        } else {
+            result = Math.min(result, size);
+        }
+        System.out.println("Width size:" + size);
+        System.out.println("Width mode:" + mode);
+        return result;
     }
 
     @Override
@@ -127,25 +163,54 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        // 根据图片尺寸缩放图片，同样只考虑了高大于宽的情况
-        float proportion = (float) canvas.getHeight() / mBitmap.getHeight();
-        if (proportion < 1) {
-            mProportion = proportion;
-            matrix.reset();
-            matrix.postScale(proportion, proportion);
-            matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
-            canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
-        } else {
-            mProportion = 0;
-            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+        if(mMode == DRAW){
+            Draw(canvas);
         }
-        setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+    }
+
+    public void Draw(Canvas canvas){
+        Log.i(TAG, "canvas.getHeight()" + canvas.getHeight() + "mBitmap.getHeight()" + mBitmap.getHeight());
+        // 根据图片尺寸缩放图片，高大于宽的情况
+        float proportion;
+        if (mBitmap.getHeight() > mBitmap.getWidth()) {
+            proportion = (float) canvas.getHeight() / mBitmap.getHeight();
+            if (proportion < 1) {
+                mProportion = proportion;
+                matrix.reset();
+                matrix.postScale(proportion, proportion);
+                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
+                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
+            } else {
+                mProportion = proportion;
+                matrix.reset();
+                matrix.postScale(proportion, proportion);
+                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
+                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
+//            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+            }
+        } else {
+            proportion = (float) canvas.getWidth() / mBitmap.getWidth();
+            if (proportion < 1) {
+                mProportion = proportion;
+                matrix.reset();
+                matrix.postScale(proportion, proportion);
+                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
+                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
+            } else {
+                mProportion = 0;
+                matrix.reset();
+                matrix.postScale(proportion, proportion);
+                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
+                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
+//            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+            }
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // 多个模式，判断当前是否可draw
-        if (mDrawMode == CANTDRAW) {
+        if (mMode == SCALE) {
             return false;
         }
         float x;
@@ -199,7 +264,6 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
      * 初始化画笔
      */
     public void initializePen() {
-        mDrawMode = CANTDRAW;
         mPaint = null;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -227,6 +291,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
 
     /**
      * 获取画笔大小
+     *
      * @return 画笔大小
      */
     public float getPenSize() {
@@ -243,6 +308,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
 
     /**
      * 获取画笔颜色
+     *
      * @return 画笔颜色
      */
     public
@@ -260,6 +326,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
 
     /**
      * 加载图片
+     *
      * @param bitmap
      */
     public void loadImage(Bitmap bitmap) {
@@ -268,6 +335,7 @@ public class DrawingView extends android.support.v7.widget.AppCompatImageView {
         mBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         mCanvas = new Canvas(mBitmap);
         setImageBitmap(mBitmap);
+        setScaleType(ScaleType.FIT_CENTER);
         invalidate();
     }
 

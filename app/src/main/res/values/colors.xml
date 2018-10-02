@@ -7,4 +7,6 @@
     <color name="translucent">#77000000</color>
     <color name="red">#ffff1744</color>
     <color name="blue">#ff2962FF</color>
+    <color name="color_red_light">#FA8072</color>
+    <color name="color_red">#FF0000</color>
 </resources>
