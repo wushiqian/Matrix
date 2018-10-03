@@ -48,9 +48,9 @@ import java.util.LinkedList;
  * @attr R.styleable#TransformativeImageView_scale_center
  */
 
-public class TransformativeImageView extends AppCompatImageView {
+public class EditImageView extends AppCompatImageView {
 
-    private static final String TAG = TransformativeImageView.class.getSimpleName();
+    private static final String TAG = EditImageView.class.getSimpleName();
 
     private static final float TOUCH_TOLERANCE = 4;
 
@@ -63,7 +63,7 @@ public class TransformativeImageView extends AppCompatImageView {
 
     private static final float MAX_SCALE_FACTOR = 2.0f; // 默认最大缩放比例为2
     private static final float UNSPECIFIED_SCALE_FACTOR = -1f; // 未指定缩放比例
-    private static final float MIN_SCALE_FACTOR = 0.8f; // 默认最小缩放比例为0.3
+    private static final float MIN_SCALE_FACTOR = 0.5f; // 默认最小缩放比例为0.3
     private static final float INIT_SCALE_FACTOR = 1.0f; // 默认适应控件大小后的初始化缩放比例
     private static final int DEFAULT_REVERT_DURATION = 300;
 
@@ -143,15 +143,15 @@ public class TransformativeImageView extends AppCompatImageView {
     }
 
 
-    public TransformativeImageView(Context context) {
+    public EditImageView(Context context) {
         this(context, null);
     }
 
-    public TransformativeImageView(Context context, @Nullable AttributeSet attrs) {
+    public EditImageView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public TransformativeImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public EditImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         obtainAttrs(attrs);
         init();
@@ -785,7 +785,7 @@ public class TransformativeImageView extends AppCompatImageView {
 
     public void loadImage(Bitmap bitmap) {
         Log.d(TAG, "loadImage: ");
-        measure(mCanvas.getWidth(), mCanvas.getHeight());
+//        measure(mCanvas.getWidth(), mCanvas.getHeight());
         mOriginBitmap = bitmap;
         mBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         mCanvas = new Canvas(mBitmap);

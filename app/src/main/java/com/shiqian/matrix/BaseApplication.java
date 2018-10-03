@@ -30,7 +30,6 @@ public class BaseApplication extends Application {
                 .setSuccessColor(Color.GREEN) // optional
                 .tintIcon(true) // optional (apply textColor also to the icon)
 //                .setToastTypeface(@NonNull Typeface typeface) // optional
-                .setTextSize(5) // optional
                 .apply(); // required
     }
 

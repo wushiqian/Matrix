@@ -5,29 +5,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/lightBlack">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/colorPrimary"
+        android:background="@android:color/transparent"
         android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
     </android.support.v7.widget.Toolbar>
 
-    <com.shiqian.matrix.view.TransformativeImageView
+    <com.shiqian.matrix.view.EditImageView
         android:id="@+id/iv_main"
+        android:src="@mipmap/ic_launcher"
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="520dp"
         app:open_rotate_revert="true"
         app:open_scale_revert="true"
         app:open_translate_revert="true"
-        app:revert_duration="300"
-        app:max_scale="4"
-        app:min_scale="1"
+        app:revert_duration="200"
         app:scale_center="finger_center"/>
 
     <RelativeLayout
@@ -253,12 +253,12 @@
                     android:src="@drawable/ic_undo" />
 
                 <ImageButton
-                    android:id="@+id/save"
+                    android:id="@+id/delete"
                     style="@style/ButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_save" />
+                    android:src="@drawable/ic_delete_24dp" />
 
             </LinearLayout>
 
@@ -270,7 +270,8 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/main_bar"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:layout_alignParentBottom="true">
 
             <ImageButton
                 android:id="@+id/Cancel"

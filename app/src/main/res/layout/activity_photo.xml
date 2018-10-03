@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/phototoolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@android:color/transparent"
+        android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+    </android.support.v7.widget.Toolbar>
+
+    <ImageButton
+        android:id="@+id/ib_choose"
+        android:src="@drawable/ic_add_to_photos_24dp"
+        android:layout_marginTop="100dp"
+        android:paddingTop="40dp"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"/>
+
+    <ImageButton
+        android:id="@+id/ib_take"
+        android:src="@drawable/ic_add_a_photo_24dp"
+        android:paddingTop="40dp"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"/>
+
+</LinearLayout>

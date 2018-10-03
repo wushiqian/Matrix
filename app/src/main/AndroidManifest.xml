@@ -18,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name=".PhotoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,7 +31,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <activity
-            android:name=".PaintActivity"
+            android:name=".MainActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <activity android:name=".SettingActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <provider
