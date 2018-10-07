@@ -161,30 +161,31 @@ public class EditImageView extends AppCompatImageView {
     private void obtainAttrs(AttributeSet attrs) {
         if (attrs == null) return;
 
-        TypedArray typedArray = getContext()
-                .obtainStyledAttributes(attrs, R.styleable.TransformativeImageView);
+        TypedArray typedArray;
+        typedArray = getContext()
+                .obtainStyledAttributes(attrs, R.styleable.EditImageView);
         mMaxScaleFactor = typedArray.getFloat(
-                R.styleable.TransformativeImageView_max_scale, MAX_SCALE_FACTOR);
+                R.styleable.EditImageView_max_scale, MAX_SCALE_FACTOR);
         mMinScaleFactor = typedArray.getFloat(
-                R.styleable.TransformativeImageView_min_scale, UNSPECIFIED_SCALE_FACTOR);
+                R.styleable.EditImageView_min_scale, UNSPECIFIED_SCALE_FACTOR);
         mRevertDuration = typedArray.getInteger(
-                R.styleable.TransformativeImageView_revert_duration, DEFAULT_REVERT_DURATION);
+                R.styleable.EditImageView_revert_duration, DEFAULT_REVERT_DURATION);
         mOpenScaleRevert = typedArray.getBoolean(
-                R.styleable.TransformativeImageView_open_scale_revert, false);
+                R.styleable.EditImageView_open_scale_revert, false);
         mOpenRotateRevert = typedArray.getBoolean(
-                R.styleable.TransformativeImageView_open_rotate_revert, false);
+                R.styleable.EditImageView_open_rotate_revert, false);
         mOpenTranslateRevert = typedArray.getBoolean(
-                R.styleable.TransformativeImageView_open_translate_revert, false);
+                R.styleable.EditImageView_open_translate_revert, false);
         mOpenAnimator = typedArray.getBoolean(
-                R.styleable.TransformativeImageView_open_animator, true);
+                R.styleable.EditImageView_open_animator, true);
         mScaleBy = typedArray.getInt(
-                R.styleable.TransformativeImageView_scale_center, SCALE_BY_IMAGE_CENTER);
+                R.styleable.EditImageView_scale_center, SCALE_BY_IMAGE_CENTER);
         typedArray.recycle();
     }
 
     private void init() {
         // FIXME 修复图片锯齿,关闭硬件加速ANTI_ALIAS_FLAG才能生效
-//        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setScaleType(ScaleType.MATRIX);
         mRevertAnimator.setDuration(mRevertDuration);
         mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
@@ -785,10 +786,10 @@ public class EditImageView extends AppCompatImageView {
 
     public void loadImage(Bitmap bitmap) {
         Log.d(TAG, "loadImage: ");
-//        measure(mCanvas.getWidth(), mCanvas.getHeight());
         mOriginBitmap = bitmap;
         mBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         mCanvas = new Canvas(mBitmap);
+        measure(mCanvas.getWidth(), mCanvas.getHeight());
         setImageBitmap(mBitmap);
         invalidate();
     }

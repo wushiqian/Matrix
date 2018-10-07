@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="TransformativeImageView">
+    <declare-styleable name="EditImageView">
         <attr name="max_scale" format="float" />
         <attr name="min_scale" format="float" />
         <attr name="revert_duration" format="integer" />

@@ -68,13 +68,12 @@ public class PhotoUtils {
         return bitmap;
     }
 
-    public static Bitmap ScaleImage(Bitmap bit,int x,int y){
+    public static Bitmap ScaleImage(Bitmap bit,float x,float y){
         Matrix matrix = new Matrix();
         matrix.setScale(x,y);
         int width = bit.getWidth();
         int height = bit.getHeight();
-        Bitmap resizedBitmap = Bitmap.createBitmap(bit, 0, 0, width, height, matrix, true);
-        return resizedBitmap;
+        return Bitmap.createBitmap(bit, 0, 0, width, height, matrix, true);
     }
 
     /**

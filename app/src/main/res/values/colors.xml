@@ -10,5 +10,7 @@
     <color name="color_red_light">#FA8072</color>
     <color name="color_red">#FF0000</color>
     <color name="green">#00FF00</color>
+    <color name="app_white">#ffffff</color>
+    <color name="app_color">#02b7be</color>
 
 </resources>
