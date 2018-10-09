@@ -11,4 +11,6 @@
     <string name="msg_clipping_image">正在裁剪图片</string>
     <string name="add">添加照片</string>
     <string name="MyEmail">wushiqian@aliyun.com</string>
+    <string name="rotate">旋转</string>
+    <string name="rerotate">反向旋转</string>
 </resources>

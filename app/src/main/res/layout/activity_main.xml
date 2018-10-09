@@ -200,13 +200,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnRotate"
-                        android:text="旋转" />
+                        android:text="@string/rotate" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnReRotate"
-                        android:text="反向旋转" />
+                        android:text="@string/rerotate" />
 
                     <Button
                         android:layout_width="wrap_content"
@@ -223,14 +223,8 @@
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="btnTranslate"
-                        android:text="平移" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:onClick="btnSkew"
-                        android:text="错切" />
+                        android:onClick="btnCrop"
+                        android:text="裁剪" />
 
                 </LinearLayout>
 

@@ -4,8 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private static int DETAILS = 0;
     private static int CROP = 0;
     private static int DRAW = 0;
+    private static int CUT = 0;
 
     private Bitmap mBitmap;
 
@@ -392,24 +391,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mEditImageView.loadImage(PhotoUtils.ScaleImage(mBitmap, 0.5f, 0.5f));
     }
 
-    public void btnTranslate(View view) {
-        Matrix matrix = new Matrix();
-        matrix.setTranslate(100, 100);
-        int width = mBitmap.getWidth();
-        int height = mBitmap.getHeight(); // 创建新的图片
-        Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
-        mEditImageView.loadImage(resizedBitmap);
-    }
-
-    public void btnSkew(View view) {
-        Matrix matrix = new Matrix();
-        matrix.setSkew(0.5f, 2);
-        int width = mBitmap.getWidth();
-        int height = mBitmap.getHeight(); // 创建新的图片
-        Bitmap resizedBitmap = Bitmap.createBitmap(mBitmap, 0, 0, width, height, matrix, true);
-        mEditImageView.loadImage(resizedBitmap);
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -480,7 +461,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 DRAW = 1 - DRAW;
                 break;
             case R.id.OK:
-                mBitmap = mEditImageView.getImageBitmap();
+                if (CUT == 1) {
+                    mBitmap = mEditImageView.getCroppedImage();
+                    mEditImageView.loadImage(mBitmap);
+                } else {
+                    mBitmap = mEditImageView.getImageBitmap();
+                    mEditImageView.loadImage(mBitmap);
+                }
+
                 allZero();
                 mEditImageView.setDrawMode(EditImageView.NONE);
                 close();
@@ -504,6 +492,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         CROP = 0;
         DETAILS = 0;
         DRAW = 0;
+        CUT = 0;
     }
 
     private void close() {
@@ -529,6 +518,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         intent = Intent.createChooser(intent, title);
         startActivity(intent);
         isShared = true;
+    }
+
+    public void btnCrop(View view) {
+        if (CUT == 0) {
+            mEditImageView.setDrawMode(EditImageView.CROP);
+            rotateBar.setVisibility(View.GONE);
+            cropBar.setVisibility(View.GONE);
+        }
+        mEditImageView.setImageBitmap(mEditImageView.getImageBitmap());
+        CUT = 1 - CUT;
     }
 
 }
