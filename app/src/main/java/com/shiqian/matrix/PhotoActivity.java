@@ -11,16 +11,15 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -87,10 +86,10 @@ public class PhotoActivity extends AppCompatActivity {
 
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
-        int uriSize = ShareUtils.getInt(this,ShareUtils.NAME,uri_list.size());
+        int uriSize = ShareUtils.getInt(this, ShareUtils.NAME, uri_list.size());
         Uri photo;
-        if(uriSize != 0){
-            for (int i = 0;i < uriSize;i++){
+        if (uriSize != 0) {
+            for (int i = 0; i < uriSize; i++) {
                 photo = Uri.parse("file:///data/user/0/com.shiqian.matrix/cache/SampleCropImage"
                         + uri_list.size() + "jpeg");
                 uri_list.add(photo);
@@ -114,6 +113,14 @@ public class PhotoActivity extends AppCompatActivity {
                     isAdd = true;
                 }
                 showChoisePhoto();
+            }
+        });
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PhotoActivity.this,SettingActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -243,7 +250,7 @@ public class PhotoActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             mSelected = Matisse.obtainResult(data);
             Log.d("Matisse", "mSelected: " + mSelected);
-            startCrop();
+            startCrop(mSelected.get(0));
         }
         if (resultCode == RESULT_OK) {
             //裁切成功
@@ -252,7 +259,7 @@ public class PhotoActivity extends AppCompatActivity {
                 //判断是添加照片还是更新照片
                 if (isAdd) {
                     if (croppedFileUri != null) {
-                        Log.i(TAG,"Uri " + croppedFileUri.toString());
+                        Log.i(TAG, "Uri " + croppedFileUri.toString());
                     }
                     uri_list.add(croppedFileUri);
                 } else {
@@ -271,15 +278,16 @@ public class PhotoActivity extends AppCompatActivity {
             case TAKE_PHOTO:   //调用相机后返回
                 //是否正常拍照
                 if (resultCode == RESULT_OK) {
+                    startCrop(imageUri);
                     //判断是添加照片还是更新照片
-                    if (isAdd) {
-                        Log.i(TAG,"Uri " + imageUri.toString());
-                        uri_list.add(imageUri);
-                    } else {
-                        uri_list.set(whichPhoto, imageUri);
-                    }
-                    //刷新数据  关闭popupwidow
-                    mPhotoAdapter.notifyDataSetChanged();
+//                    if (isAdd) {
+//                        uri_list.add(imageUri);
+//                    } else {
+//                        uri_list.set(whichPhoto, imageUri);
+//                    }
+//                    //刷新数据  关闭popupwidow
+//                    mPhotoAdapter.notifyDataSetChanged();
+//                    choisePhotoPopup.dismissPopupWindow(parentLaoyout);
                 } else if (resultCode == RESULT_CANCELED) {
                     //取消拍照
                     choisePhotoPopup.dismissPopupWindow(parentLaoyout);
@@ -289,8 +297,8 @@ public class PhotoActivity extends AppCompatActivity {
     }
 
     //裁剪框架配置
-    private void startCrop() {
-        Uri sourceUri = mSelected.get(0);
+    private void startCrop(Uri sourceUri) {
+//        Uri sourceUri = mSelected.get(0);
         //裁剪后保存到文件中
         Uri destinationUri = Uri.fromFile(new File(getCacheDir(), "SampleCropImage" + uri_list.size() + "jpeg"));
         UCrop uCrop = UCrop.of(sourceUri, destinationUri);
@@ -318,6 +326,6 @@ public class PhotoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ShareUtils.putInt(this,ShareUtils.NAME,uri_list.size());
+        ShareUtils.putInt(this, ShareUtils.NAME, uri_list.size());
     }
 }

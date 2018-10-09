@@ -1,7 +1,7 @@
 package com.shiqian.matrix.view;
 /*
  * 包名：Matrix
- * 文件名： TransformativeImageView
+ * 文件名： EditImageView
  * 创建者：wushiqian
  * 创建时间 2018/10/1 12:50 PM
  * 描述： TODO//
@@ -58,19 +58,20 @@ public class EditImageView extends AppCompatImageView {
      * 模式
      */
     private int mMode;
-    public static final int SCALE = 0;
+    public static final int NONE = 0;
     public static final int DRAW = 1;
+    public static final int SCALE = 2;
 
     private static final float MAX_SCALE_FACTOR = 2.0f; // 默认最大缩放比例为2
     private static final float UNSPECIFIED_SCALE_FACTOR = -1f; // 未指定缩放比例
-    private static final float MIN_SCALE_FACTOR = 0.5f; // 默认最小缩放比例为0.3
+    private static final float MIN_SCALE_FACTOR = 0.5f; // 默认最小缩放比例为0.5
     private static final float INIT_SCALE_FACTOR = 1.0f; // 默认适应控件大小后的初始化缩放比例
     private static final int DEFAULT_REVERT_DURATION = 300;
 
     private int mRevertDuration = DEFAULT_REVERT_DURATION; // 回弹动画时间
     private float mMaxScaleFactor = MAX_SCALE_FACTOR; // 最大缩放比例
     private float mMinScaleFactor = UNSPECIFIED_SCALE_FACTOR; // 此最小缩放比例优先级高于下面两个
-    private float mVerticalMinScaleFactor = MIN_SCALE_FACTOR; // 图片最初的最小缩放比例
+    private float mVerticalMinScaleFactor = INIT_SCALE_FACTOR; // 图片最初的最小缩放比例
     private float mHorizontalMinScaleFactor = MIN_SCALE_FACTOR; // 图片旋转90（或-90）度后的的最小缩放比例
     protected Matrix mMatrix = new Matrix(); // 用于图片旋转、平移、缩放的矩阵
     protected RectF mImageRect = new RectF(); // 保存图片所在区域矩形，坐标为相对于本View的坐标
@@ -189,7 +190,7 @@ public class EditImageView extends AppCompatImageView {
         setScaleType(ScaleType.MATRIX);
         mRevertAnimator.setDuration(mRevertDuration);
         mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-        mMode = SCALE;
+        mMode = NONE;
         savePath = new LinkedList<>();
         matrix = new Matrix();
     }
@@ -935,5 +936,6 @@ public class EditImageView extends AppCompatImageView {
         }
         return false;
     }
+
 
 }

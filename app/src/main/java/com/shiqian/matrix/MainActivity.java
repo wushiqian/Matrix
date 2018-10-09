@@ -1,14 +1,17 @@
 package com.shiqian.matrix;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private int MID_VALUE = 127;
     private int MAX_VALUE = 255;
 
+    private boolean isSaved = false;
+    private boolean isShared = false;
+
     /**
      * UI
      */
@@ -102,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private void initPaintMode() {
         mEditImageView.initializePen();
         mEditImageView.setPenSize(10);
-        mEditImageView.setPenColor(getColor(R.color.blue));
+        mEditImageView.setPenColor(getColor(R.color.red));
     }
 
     /**
@@ -129,11 +135,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 if (mEditImageView.saveImage(sdcardPath, "Image", Bitmap.CompressFormat.JPEG,
                         100)) {
                     Toasty.success(this, "Save Success", Toast.LENGTH_SHORT).show();
+                    isSaved = true;
                 }
                 break;
             case R.id.share:
                 String shareString = "分享照片";
                 shareImage(shareString);
+
                 break;
             case R.id.setting:
                 Intent intent = new Intent(this, SettingActivity.class);
@@ -149,6 +157,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      */
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
+//        StatusBarUtil.setStatusBarColor(this, R.color.colorPrimary);
+        isSaved = false;
+        isShared = false;
         detailsBar = findViewById(R.id.details_bar);
         filterBar = findViewById(R.id.filter_bar);
         rotateBar = findViewById(R.id.rotate_bar);
@@ -185,6 +196,35 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isSaved || isShared) {
+                    finish();//返回
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("你确定要返回吗");
+                    builder.setMessage("你还没有保存或分享");
+                    builder.setCancelable(true);
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    builder.show();
+                }
+
+            }
+        });
         hueSeekBar = findViewById(R.id.sb_hue);
         satSeekBar = findViewById(R.id.sb_saturation);
         lumSeekBar = findViewById(R.id.sb_lum);
@@ -379,12 +419,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 BRUSH = 1 - BRUSH;
                 break;
             case R.id.color_panel:
+                COLOR_PANEL++;
                 if (COLOR_PANEL == 2) {
                     mColorPanel.setImageResource(R.drawable.ic_color_green);
                     mEditImageView.setPenColor(getColor(R.color.green));
-                    COLOR_PANEL = 0;
+                    COLOR_PANEL = -1;
                 } else {
-                    COLOR_PANEL++;
                     mColorPanel.setImageResource(COLOR_PANEL == 1 ? R.drawable.ic_color_blue :
                             R.drawable.ic_color_red);
                     mEditImageView.setPenColor(COLOR_PANEL == 1 ? getColor(R.color.blue) :
@@ -416,6 +456,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.Crop:
                 close();
                 mainBar.setVisibility(View.GONE);
+                if (CROP == 0) {
+                    mEditImageView.setDrawMode(EditImageView.SCALE);
+                } else {
+                    mEditImageView.setDrawMode(EditImageView.NONE);
+                }
                 okBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
                 rotateBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
                 cropBar.setVisibility(CROP == 0 ? View.VISIBLE : View.GONE);
@@ -437,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.OK:
                 mBitmap = mEditImageView.getImageBitmap();
                 allZero();
-                mEditImageView.setDrawMode(EditImageView.SCALE);
+                mEditImageView.setDrawMode(EditImageView.NONE);
                 close();
                 mainBar.setVisibility(View.VISIBLE);
                 break;
@@ -445,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 mEditImageView.loadImage(mBitmap);
                 mEditImageView.clear();
                 allZero();
-                mEditImageView.setDrawMode(EditImageView.SCALE);
+                mEditImageView.setDrawMode(EditImageView.NONE);
                 close();
                 mainBar.setVisibility(View.VISIBLE);
                 break;
@@ -483,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         intent.putExtra(Intent.EXTRA_STREAM, uri);
         intent = Intent.createChooser(intent, title);
         startActivity(intent);
+        isShared = true;
     }
 
 }

@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/lightBlack"
     android:orientation="vertical"
-    tools:context=".MainActivity"
-    android:background="@color/lightBlack">
+    tools:context=".MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -20,15 +20,15 @@
 
     <com.shiqian.matrix.view.EditImageView
         android:id="@+id/iv_main"
-        android:src="@mipmap/ic_launcher"
-        android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="520dp"
+        android:layout_height="560dp"
+        android:layout_gravity="center"
+        android:src="@mipmap/ic_launcher"
         app:open_rotate_revert="true"
         app:open_scale_revert="true"
         app:open_translate_revert="true"
         app:revert_duration="100"
-        app:scale_center="finger_center"/>
+        app:scale_center="finger_center" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -122,11 +122,11 @@
                     android:layout_height="wrap_content"
                     app:bsb_bubble_color="@color/blue"
                     app:bsb_bubble_text_color="@color/colorPrimaryDark"
-                    app:bsb_section_count="9"
                     app:bsb_max="180.0"
                     app:bsb_min="-180"
                     app:bsb_progress="0"
                     app:bsb_second_track_color="@color/color_red"
+                    app:bsb_section_count="9"
                     app:bsb_section_text_position="bottom_sides"
                     app:bsb_show_progress_in_float="true"
                     app:bsb_show_section_mark="true"
@@ -136,52 +136,57 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/filter_bar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <Button
+                <LinearLayout
+                    android:id="@+id/filter_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:onClick="btnNegative"
-                    android:text="底片效果" />
+                    android:visibility="gone">
 
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="btnOld"
-                    android:text="老照片效果" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnNegative"
+                        android:text="底片效果" />
 
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="btnEmboss"
-                    android:text="浮雕效果" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnOld"
+                        android:text="老照片效果" />
 
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="btnPolaroid"
-                    android:text="宝丽来" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnEmboss"
+                        android:text="浮雕效果" />
 
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="btnCool"
-                    android:text="怀旧" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnPolaroid"
+                        android:text="宝丽来" />
 
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="btnNeon"
-                    android:text="霓虹" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnCool"
+                        android:text="怀旧" />
 
-            </LinearLayout>
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="btnNeon"
+                        android:text="霓虹" />
 
-            <ScrollView
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -189,7 +194,6 @@
                     android:id="@+id/crop_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:visibility="gone">
 
                     <Button
@@ -230,8 +234,7 @@
 
                 </LinearLayout>
 
-            </ScrollView>
-
+            </HorizontalScrollView>
 
             <LinearLayout
                 android:id="@+id/paint_bar"
@@ -282,9 +285,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/main_bar"
+            android:layout_alignParentBottom="true"
             android:orientation="horizontal"
-            android:visibility="gone"
-            android:layout_alignParentBottom="true">
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/Cancel"

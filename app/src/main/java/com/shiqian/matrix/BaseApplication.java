@@ -19,12 +19,9 @@ import es.dmoral.toasty.Toasty;
 
 public class BaseApplication extends Application {
 
-    public static Context mContext;
-
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext = this;
         //初始化Bugly
         CrashReport.initCrashReport(getApplicationContext(), StaticUtils.BUGLY_APP_ID, true);
         MobSDK.init(this);
@@ -37,7 +34,4 @@ public class BaseApplication extends Application {
                 .apply(); // required
     }
 
-    public static Context getContext() {
-        return mContext;
-    }
 }

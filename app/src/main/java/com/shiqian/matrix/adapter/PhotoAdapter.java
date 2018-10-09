@@ -79,7 +79,7 @@ public class PhotoAdapter extends BaseAdapter {
                 e.printStackTrace();
             }
         } else {
-            holder.iv_img.setImageBitmap(BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.m_addimg_1x));
+            holder.iv_img.setImageBitmap(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.add));
         }
         return convertView;
     }
