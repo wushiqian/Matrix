@@ -53,16 +53,13 @@ public enum CropWindowEdgeSelector {
     //中间位置
     CENTER(new CropWindowMoveHelper());
 
-
     private CropWindowScaleHelper mHelper;
-
 
     CropWindowEdgeSelector(CropWindowScaleHelper helper) {
         mHelper = helper;
     }
 
     public void updateCropWindow(float x, float y, @NonNull RectF imageRect) {
-
         mHelper.updateCropWindow(x, y, imageRect);
     }
 

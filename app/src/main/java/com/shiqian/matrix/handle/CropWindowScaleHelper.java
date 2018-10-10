@@ -17,16 +17,13 @@ import com.shiqian.matrix.view.Edge;
  */
 class CropWindowScaleHelper {
 
-
     private Edge mHorizontalEdge;
     private Edge mVerticalEdge;
-
 
     CropWindowScaleHelper(Edge horizontalEdge, Edge verticalEdge) {
         mHorizontalEdge = horizontalEdge;
         mVerticalEdge = verticalEdge;
     }
-
 
     /**
      * 随着手指的移动而改变裁剪框的大小
@@ -45,6 +42,5 @@ class CropWindowScaleHelper {
         if (mVerticalEdge != null)
             mVerticalEdge.updateCoordinate(x, y, imageRect);
     }
-
 
 }

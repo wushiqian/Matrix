@@ -17,7 +17,6 @@ import com.shiqian.matrix.handle.CropWindowEdgeSelector;
  */
 public class CatchEdgeUtils {
 
-
     /**
      * 判断手指是否的位置是否在有效的缩放区域：缩放区域的半径为targetRadius
      * 缩放区域使指：裁剪框的四个角度或者四条边，当手指位置处在某个角
@@ -48,7 +47,6 @@ public class CatchEdgeUtils {
             nearestCropWindowEdgeSelector = CropWindowEdgeSelector.TOP_LEFT;
         }
 
-
         //计算手指距离右上角的距离
         final float distanceToTopRight = calculateDistance(x, y, right, top);
         if (distanceToTopRight < nearestDistance) {
@@ -75,7 +73,6 @@ public class CatchEdgeUtils {
             return nearestCropWindowEdgeSelector;
         }
 
-
         //////////判断手指是否在图二种的C位置：四个边的某条边/////////////////
         if (CatchEdgeUtils.isInHorizontalTargetZone(x, y, left, right, top, targetRadius)) {
             return CropWindowEdgeSelector.TOP;//说明手指在裁剪框top区域
@@ -86,7 +83,6 @@ public class CatchEdgeUtils {
         } else if (CatchEdgeUtils.isInVerticalTargetZone(x, y, right, top, bottom, targetRadius)) {
             return CropWindowEdgeSelector.RIGHT;//说明手指在裁剪框right区域
         }
-
 
         //////////判断手指是否在图二种的B位置：裁剪框的中间/////////////////
         if (isWithinBounds(x, y, left, top, right, bottom)) {
@@ -155,7 +151,6 @@ public class CatchEdgeUtils {
         touchOffsetOutput.y = touchOffsetY;
     }
 
-
     private static boolean isInHorizontalTargetZone(float x,
                                                     float y,
                                                     float handleXStart,
@@ -165,7 +160,6 @@ public class CatchEdgeUtils {
 
         return (x > handleXStart && x < handleXEnd && Math.abs(y - handleY) <= targetRadius);
     }
-
 
     private static boolean isInVerticalTargetZone(float x,
                                                   float y,

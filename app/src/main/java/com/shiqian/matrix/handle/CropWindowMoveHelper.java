@@ -17,11 +17,9 @@ import com.shiqian.matrix.view.Edge;
  */
 class CropWindowMoveHelper extends CropWindowScaleHelper {
 
-
     CropWindowMoveHelper() {
         super(null, null);
     }
-
 
     @Override
     void updateCropWindow(float x,

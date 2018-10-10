@@ -69,12 +69,15 @@ public class EditImageView extends AppCompatImageView {
     public static final int SCALE = 2;
     public static final int CROP = 3;
 
-    private static final float MAX_SCALE_FACTOR = 2.0f; // 默认最大缩放比例为2
+    private static final float MAX_SCALE_FACTOR = 3.0f; // 默认最大缩放比例为3
     private static final float UNSPECIFIED_SCALE_FACTOR = -1f; // 未指定缩放比例
     private static final float MIN_SCALE_FACTOR = 0.5f; // 默认最小缩放比例为0.5
     private static final float INIT_SCALE_FACTOR = 1.0f; // 默认适应控件大小后的初始化缩放比例
     private static final int DEFAULT_REVERT_DURATION = 300;
 
+    /**
+     * 平移缩放旋转相关
+     */
     private int mRevertDuration = DEFAULT_REVERT_DURATION; // 回弹动画时间
     private float mMaxScaleFactor = MAX_SCALE_FACTOR; // 最大缩放比例
     private float mMinScaleFactor = UNSPECIFIED_SCALE_FACTOR; // 此最小缩放比例优先级高于下面两个
@@ -93,10 +96,15 @@ public class EditImageView extends AppCompatImageView {
     private Bitmap mOriginBitmap;
     private Canvas mCanvas;
 
+    /**
+     * 涂鸦相关
+     */
+    //涂鸦路径
     private Path mPath;
-    private Paint mBitmapPaint;
+    //涂鸦画笔
     private Paint mPaint;
     private float mX, mY;
+    //长宽比例
     private float mProportion = 0;
     //保存的涂鸦路径
     private LinkedList<DrawPath> savePath;
@@ -108,6 +116,9 @@ public class EditImageView extends AppCompatImageView {
     private float mPaintBarPenSize;
     private int mPaintBarPenColor;
 
+    /**
+     * 裁剪相关
+     */
     //裁剪框边框画笔
     private Paint mBorderPaint;
 
@@ -135,39 +146,6 @@ public class EditImageView extends AppCompatImageView {
     private PointF mTouchOffset = new PointF();
 
     private CropWindowEdgeSelector mPressedCropWindowEdgeSelector;
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (mBitmap == null) {
-            mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        }
-        mCanvas = new Canvas(mBitmap);
-        mCanvas.drawColor(Color.TRANSPARENT);
-    }
-
-    /**
-     * 路径对象
-     */
-    private class DrawPath {
-        Path path;
-        int paintColor;
-        float paintWidth;
-
-        DrawPath(Path path, int paintColor, float paintWidth) {
-            this.path = path;
-            this.paintColor = paintColor;
-            this.paintWidth = paintWidth;
-        }
-
-        int getPaintColor() {
-            return paintColor;
-        }
-
-        float getPaintWidth() {
-            return paintWidth;
-        }
-    }
 
     /**
      * 设置模式
@@ -223,10 +201,11 @@ public class EditImageView extends AppCompatImageView {
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setScaleType(ScaleType.MATRIX);
         mRevertAnimator.setDuration(mRevertDuration);
-        mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+
         mMode = NONE;
         savePath = new LinkedList<>();
         matrix = new Matrix();
+
         mBorderPaint = new Paint();
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setStrokeWidth(UIUtils.dip2px(context, 3));
@@ -237,12 +216,10 @@ public class EditImageView extends AppCompatImageView {
         mGuidelinePaint.setStrokeWidth(UIUtils.dip2px(context, 1));
         mGuidelinePaint.setColor(Color.parseColor("#AAFFFFFF"));
 
-
         mCornerPaint = new Paint();
         mCornerPaint.setStyle(Paint.Style.STROKE);
         mCornerPaint.setStrokeWidth(UIUtils.dip2px(context, 5));
         mCornerPaint.setColor(Color.WHITE);
-
 
         mScaleRadius = UIUtils.dip2px(context, 24);
         mBorderThickness = UIUtils.dip2px(context, 3);
@@ -250,10 +227,26 @@ public class EditImageView extends AppCompatImageView {
         mCornerLength = UIUtils.dip2px(context, 20);
     }
 
+    /**
+     * 初始化画笔
+     */
+    public void initializePen() {
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setFilterBitmap(true);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeJoin(Paint.Join.ROUND);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
+    }
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+        //初始化位置和大小
         initImgPositionAndSize();
+        //初始化裁剪框
         mBitmapRect = getBitmapRect();
         initCropWindow(mBitmapRect);
     }
@@ -274,7 +267,6 @@ public class EditImageView extends AppCompatImageView {
 
         float scaleFactor = mHorizontalMinScaleFactor;
 
-        // 初始图片缩放比例比最小缩放比例稍大
         scaleFactor *= INIT_SCALE_FACTOR;
         mScaleFactor = scaleFactor;
         mMatrix.postScale(scaleFactor, scaleFactor, mImageRect.centerX(), mImageRect.centerY());
@@ -313,71 +305,100 @@ public class EditImageView extends AppCompatImageView {
 
     public void Draw(Canvas canvas) {
         Log.i(TAG, "canvas.getHeight()" + canvas.getHeight() + "mBitmap.getHeight()" + mBitmap.getHeight());
-
         // 根据图片尺寸缩放图片，高大于宽的情况
         float proportion;
         if (mBitmap.getHeight() > mBitmap.getWidth()) {
             proportion = (float) canvas.getHeight() / mBitmap.getHeight();
-            if (proportion < 1) {
-                mProportion = proportion;
-                matrix.reset();
-                matrix.postScale(proportion, proportion);
-                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
-                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
-            } else {
-                mProportion = proportion;
-                matrix.reset();
-                matrix.postScale(proportion, proportion);
-                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
-                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
-//            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
-            }
         } else {
             proportion = (float) canvas.getWidth() / mBitmap.getWidth();
-            if (proportion < 1) {
-                mProportion = proportion;
-                matrix.reset();
-                matrix.postScale(proportion, proportion);
-                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
-                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
-            } else {
-                mProportion = 0;
-                matrix.reset();
-                matrix.postScale(proportion, proportion);
-                matrix.postTranslate((canvas.getWidth() - mBitmap.getWidth() * proportion) / 2, 0);
-                canvas.drawBitmap(mBitmap, matrix, mBitmapPaint);
-//            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
-            }
         }
+        mProportion = proportion;
+        Log.d(TAG, "proportion: " + proportion);
     }
 
-    private PointF mLastPoint1 = new PointF(); // 上次事件的第一个触点
-    private PointF mLastPoint2 = new PointF(); // 上次事件的第二个触点
-    private PointF mCurrentPoint1 = new PointF(); // 本次事件的第一个触点
-    private PointF mCurrentPoint2 = new PointF(); // 本次事件的第二个触点
-    private float mScaleFactor = 1.0f; // 当前的缩放倍数
-    private boolean mCanScale = false; // 是否可以缩放
 
-    protected PointF mLastMidPoint = new PointF(); // 图片平移时记录上一次ACTION_MOVE的点
-    private PointF mCurrentMidPoint = new PointF(); // 当前各触点的中点
-    protected boolean mCanDrag = false; // 是否可以平移
+    private void drawGuidelines(@NonNull Canvas canvas) {
 
-    private PointF mLastVector = new PointF(); // 记录上一次触摸事件两指所表示的向量
-    private PointF mCurrentVector = new PointF(); // 记录当前触摸事件两指所表示的向量
-    private boolean mCanRotate = false; // 判断是否可以旋转
+        final float left = Edge.LEFT.getCoordinate();
+        final float top = Edge.TOP.getCoordinate();
+        final float right = Edge.RIGHT.getCoordinate();
+        final float bottom = Edge.BOTTOM.getCoordinate();
 
-    private MatrixRevertAnimator mRevertAnimator = new MatrixRevertAnimator(); // 回弹动画
-    private float[] mFromMatrixValue = new float[9]; // 动画初始时矩阵值
-    private float[] mToMatrixValue = new float[9]; // 动画终结时矩阵值
+        final float oneThirdCropWidth = Edge.getWidth() / 3;
 
-    protected boolean isTransforming = false; // 图片是否正在变化
+        final float x1 = left + oneThirdCropWidth;
+        //引导线竖直方向第一条线
+        canvas.drawLine(x1, top, x1, bottom, mGuidelinePaint);
+        final float x2 = right - oneThirdCropWidth;
+        //引导线竖直方向第二条线
+        canvas.drawLine(x2, top, x2, bottom, mGuidelinePaint);
+
+        final float oneThirdCropHeight = Edge.getHeight() / 3;
+
+        final float y1 = top + oneThirdCropHeight;
+        //引导线水平方向第一条线
+        canvas.drawLine(left, y1, right, y1, mGuidelinePaint);
+        final float y2 = bottom - oneThirdCropHeight;
+        //引导线水平方向第二条线
+        canvas.drawLine(left, y2, right, y2, mGuidelinePaint);
+    }
+
+    private void drawBorder(@NonNull Canvas canvas) {
+
+        canvas.drawRect(Edge.LEFT.getCoordinate(),
+                Edge.TOP.getCoordinate(),
+                Edge.RIGHT.getCoordinate(),
+                Edge.BOTTOM.getCoordinate(),
+                mBorderPaint);
+    }
+
+    private void drawCorners(@NonNull Canvas canvas) {
+
+        final float left = Edge.LEFT.getCoordinate();
+        final float top = Edge.TOP.getCoordinate();
+        final float right = Edge.RIGHT.getCoordinate();
+        final float bottom = Edge.BOTTOM.getCoordinate();
+
+        //简单的数学计算
+
+        final float lateralOffset = (mCornerThickness - mBorderThickness) / 2f;
+        final float startOffset = mCornerThickness - (mBorderThickness / 2f);
+
+        //左上角左面的短线
+        canvas.drawLine(left - lateralOffset, top - startOffset, left - lateralOffset, top + mCornerLength, mCornerPaint);
+        //左上角上面的短线
+        canvas.drawLine(left - startOffset, top - lateralOffset, left + mCornerLength, top - lateralOffset, mCornerPaint);
+
+        //右上角右面的短线
+        canvas.drawLine(right + lateralOffset, top - startOffset, right + lateralOffset, top + mCornerLength, mCornerPaint);
+        //右上角上面的短线
+        canvas.drawLine(right + startOffset, top - lateralOffset, right - mCornerLength, top - lateralOffset, mCornerPaint);
+
+        //左下角左面的短线
+        canvas.drawLine(left - lateralOffset, bottom + startOffset, left - lateralOffset, bottom - mCornerLength, mCornerPaint);
+        //左下角底部的短线
+        canvas.drawLine(left - startOffset, bottom + lateralOffset, left + mCornerLength, bottom + lateralOffset, mCornerPaint);
+
+        //右下角左面的短线
+        canvas.drawLine(right + lateralOffset, bottom + startOffset, right + lateralOffset, bottom - mCornerLength, mCornerPaint);
+        //右下角底部的短线
+        canvas.drawLine(right + startOffset, bottom + lateralOffset, right - mCornerLength, bottom + lateralOffset, mCornerPaint);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (mBitmap == null) {
+            mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        }
+        mCanvas = new Canvas(mBitmap);
+        mCanvas.drawColor(Color.TRANSPARENT);
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-//        if(mMode == DRAW){
         int widthSize = getMeasureWidth(widthMeasureSpec);
         int heightSize = getMeasureHeight(heightMeasureSpec);
         if (mBitmap != null) {
@@ -390,8 +411,7 @@ public class EditImageView extends AppCompatImageView {
                 widthSize = mBitmap.getWidth();
             }
         }
-        setMeasuredDimension(widthSize, heightSize);  //必须调用此方法，否则会抛出异常
-//        }
+        setMeasuredDimension(widthSize, heightSize);
 
     }
 
@@ -428,6 +448,51 @@ public class EditImageView extends AppCompatImageView {
         System.out.println("Width mode:" + mode);
         return result;
     }
+
+    /**
+     * 路径对象
+     */
+    private class DrawPath {
+        Path path;
+        int paintColor;
+        float paintWidth;
+
+        DrawPath(Path path, int paintColor, float paintWidth) {
+            this.path = path;
+            this.paintColor = paintColor;
+            this.paintWidth = paintWidth;
+        }
+
+        int getPaintColor() {
+            return paintColor;
+        }
+
+        float getPaintWidth() {
+            return paintWidth;
+        }
+
+    }
+
+    private PointF mLastPoint1 = new PointF(); // 上次事件的第一个触点
+    private PointF mLastPoint2 = new PointF(); // 上次事件的第二个触点
+    private PointF mCurrentPoint1 = new PointF(); // 本次事件的第一个触点
+    private PointF mCurrentPoint2 = new PointF(); // 本次事件的第二个触点
+    private float mScaleFactor = 1.0f; // 当前的缩放倍数
+    private boolean mCanScale = false; // 是否可以缩放
+
+    protected PointF mLastMidPoint = new PointF(); // 图片平移时记录上一次ACTION_MOVE的点
+    private PointF mCurrentMidPoint = new PointF(); // 当前各触点的中点
+    protected boolean mCanDrag = false; // 是否可以平移
+
+    private PointF mLastVector = new PointF(); // 记录上一次触摸事件两指所表示的向量
+    private PointF mCurrentVector = new PointF(); // 记录当前触摸事件两指所表示的向量
+    private boolean mCanRotate = false; // 判断是否可以旋转
+
+    private MatrixRevertAnimator mRevertAnimator = new MatrixRevertAnimator(); // 回弹动画
+    private float[] mFromMatrixValue = new float[9]; // 动画初始时矩阵值
+    private float[] mToMatrixValue = new float[9]; // 动画终结时矩阵值
+
+    protected boolean isTransforming = false; // 图片是否正在变化
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -557,6 +622,50 @@ public class EditImageView extends AppCompatImageView {
         super.onTouchEvent(event);
         invalidate();
         return true;
+    }
+
+    /**
+     * 处理手指按下事件
+     *
+     * @param x 手指按下时水平方向的坐标
+     * @param y 手指按下时竖直方向的坐标
+     */
+    private void onActionDown(float x, float y) {
+
+        //获取边框的上下左右四个坐标点的坐标
+        final float left = Edge.LEFT.getCoordinate();
+        final float top = Edge.TOP.getCoordinate();
+        final float right = Edge.RIGHT.getCoordinate();
+        final float bottom = Edge.BOTTOM.getCoordinate();
+
+        //获取手指所在位置位于图二种的A，B，C，D位置种哪一种
+        mPressedCropWindowEdgeSelector = CatchEdgeUtils.getPressedHandle(x, y, left, top, right, bottom, mScaleRadius);
+
+        if (mPressedCropWindowEdgeSelector != null) {
+            //计算手指按下的位置与裁剪框的偏移量
+            CatchEdgeUtils.getOffset(mPressedCropWindowEdgeSelector, x, y, left, top, right, bottom, mTouchOffset);
+            invalidate();
+        }
+    }
+
+    private void onActionUp() {
+        if (mPressedCropWindowEdgeSelector != null) {
+            mPressedCropWindowEdgeSelector = null;
+            invalidate();
+        }
+    }
+
+    private void onActionMove(float x, float y) {
+
+        if (mPressedCropWindowEdgeSelector == null) {
+            return;
+        }
+
+        x += mTouchOffset.x;
+        y += mTouchOffset.y;
+
+        mPressedCropWindowEdgeSelector.updateCropWindow(x, y, mBitmapRect);
+        invalidate();
     }
 
     private void rotate(MotionEvent event) {
@@ -704,7 +813,6 @@ public class EditImageView extends AppCompatImageView {
         // 变换后向量与x轴夹角
         double rad = Math.atan2(xAxis[1], xAxis[0]);
         return (float) Math.toDegrees(rad);
-
     }
 
     /**
@@ -859,6 +967,7 @@ public class EditImageView extends AppCompatImageView {
 
     /**
      * 载入bitmap
+     *
      * @param bitmap 图像
      */
     public void loadImage(Bitmap bitmap) {
@@ -869,20 +978,6 @@ public class EditImageView extends AppCompatImageView {
         measure(mCanvas.getWidth(), mCanvas.getHeight());
         setImageBitmap(mBitmap);
         invalidate();
-    }
-
-    /**
-     * 初始化画笔
-     */
-    public void initializePen() {
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setFilterBitmap(true);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
-        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
     }
 
     @Override
@@ -975,7 +1070,6 @@ public class EditImageView extends AppCompatImageView {
      */
     public Bitmap getCroppedImage() {
 
-
         final Drawable drawable = getDrawable();
         if (drawable == null || !(drawable instanceof BitmapDrawable)) {
             return null;
@@ -1059,122 +1153,6 @@ public class EditImageView extends AppCompatImageView {
         Edge.BOTTOM.initCoordinate(bitmapRect.bottom - verticalPadding);
     }
 
-    private void drawGuidelines(@NonNull Canvas canvas) {
-
-        final float left = Edge.LEFT.getCoordinate();
-        final float top = Edge.TOP.getCoordinate();
-        final float right = Edge.RIGHT.getCoordinate();
-        final float bottom = Edge.BOTTOM.getCoordinate();
-
-        final float oneThirdCropWidth = Edge.getWidth() / 3;
-
-        final float x1 = left + oneThirdCropWidth;
-        //引导线竖直方向第一条线
-        canvas.drawLine(x1, top, x1, bottom, mGuidelinePaint);
-        final float x2 = right - oneThirdCropWidth;
-        //引导线竖直方向第二条线
-        canvas.drawLine(x2, top, x2, bottom, mGuidelinePaint);
-
-        final float oneThirdCropHeight = Edge.getHeight() / 3;
-
-        final float y1 = top + oneThirdCropHeight;
-        //引导线水平方向第一条线
-        canvas.drawLine(left, y1, right, y1, mGuidelinePaint);
-        final float y2 = bottom - oneThirdCropHeight;
-        //引导线水平方向第二条线
-        canvas.drawLine(left, y2, right, y2, mGuidelinePaint);
-    }
-
-    private void drawBorder(@NonNull Canvas canvas) {
-
-        canvas.drawRect(Edge.LEFT.getCoordinate(),
-                Edge.TOP.getCoordinate(),
-                Edge.RIGHT.getCoordinate(),
-                Edge.BOTTOM.getCoordinate(),
-                mBorderPaint);
-    }
-
-
-    private void drawCorners(@NonNull Canvas canvas) {
-
-        final float left = Edge.LEFT.getCoordinate();
-        final float top = Edge.TOP.getCoordinate();
-        final float right = Edge.RIGHT.getCoordinate();
-        final float bottom = Edge.BOTTOM.getCoordinate();
-
-        //简单的数学计算
-
-        final float lateralOffset = (mCornerThickness - mBorderThickness) / 2f;
-        final float startOffset = mCornerThickness - (mBorderThickness / 2f);
-
-        //左上角左面的短线
-        canvas.drawLine(left - lateralOffset, top - startOffset, left - lateralOffset, top + mCornerLength, mCornerPaint);
-        //左上角上面的短线
-        canvas.drawLine(left - startOffset, top - lateralOffset, left + mCornerLength, top - lateralOffset, mCornerPaint);
-
-        //右上角右面的短线
-        canvas.drawLine(right + lateralOffset, top - startOffset, right + lateralOffset, top + mCornerLength, mCornerPaint);
-        //右上角上面的短线
-        canvas.drawLine(right + startOffset, top - lateralOffset, right - mCornerLength, top - lateralOffset, mCornerPaint);
-
-        //左下角左面的短线
-        canvas.drawLine(left - lateralOffset, bottom + startOffset, left - lateralOffset, bottom - mCornerLength, mCornerPaint);
-        //左下角底部的短线
-        canvas.drawLine(left - startOffset, bottom + lateralOffset, left + mCornerLength, bottom + lateralOffset, mCornerPaint);
-
-        //右下角左面的短线
-        canvas.drawLine(right + lateralOffset, bottom + startOffset, right + lateralOffset, bottom - mCornerLength, mCornerPaint);
-        //右下角底部的短线
-        canvas.drawLine(right + startOffset, bottom + lateralOffset, right - mCornerLength, bottom + lateralOffset, mCornerPaint);
-    }
-
-    /**
-     * 处理手指按下事件
-     *
-     * @param x 手指按下时水平方向的坐标
-     * @param y 手指按下时竖直方向的坐标
-     */
-    private void onActionDown(float x, float y) {
-
-        //获取边框的上下左右四个坐标点的坐标
-        final float left = Edge.LEFT.getCoordinate();
-        final float top = Edge.TOP.getCoordinate();
-        final float right = Edge.RIGHT.getCoordinate();
-        final float bottom = Edge.BOTTOM.getCoordinate();
-
-        //获取手指所在位置位于图二种的A，B，C，D位置种哪一种
-        mPressedCropWindowEdgeSelector = CatchEdgeUtils.getPressedHandle(x, y, left, top, right, bottom, mScaleRadius);
-
-        if (mPressedCropWindowEdgeSelector != null) {
-            //计算手指按下的位置与裁剪框的偏移量
-            CatchEdgeUtils.getOffset(mPressedCropWindowEdgeSelector, x, y, left, top, right, bottom, mTouchOffset);
-            invalidate();
-        }
-    }
-
-
-    private void onActionUp() {
-        if (mPressedCropWindowEdgeSelector != null) {
-            mPressedCropWindowEdgeSelector = null;
-            invalidate();
-        }
-    }
-
-
-    private void onActionMove(float x, float y) {
-
-        if (mPressedCropWindowEdgeSelector == null) {
-            return;
-        }
-
-        x += mTouchOffset.x;
-        y += mTouchOffset.y;
-
-
-        mPressedCropWindowEdgeSelector.updateCropWindow(x, y, mBitmapRect);
-        invalidate();
-    }
-
     //-------getter and setter---------
 
     public void setmMaxScaleFactor(float mMaxScaleFactor) {
@@ -1199,6 +1177,7 @@ public class EditImageView extends AppCompatImageView {
     }
 
     /**
+     * 设置画笔颜色
      */
     public void setPenColor(@ColorInt int color) {
         mPaintBarPenColor = color;

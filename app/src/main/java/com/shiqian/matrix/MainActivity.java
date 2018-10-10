@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.util.Calendar;
+import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
 
@@ -56,14 +57,17 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private static int DRAW = 0;
     private static int CUT = 0;
 
+    //图片
     private Bitmap mBitmap;
 
+    //色调饱和度亮度
     private float mHue = 0.0f;
     private float mSaturation = 1f;
     private float mLum = 1f;
     private int MID_VALUE = 127;
     private int MAX_VALUE = 255;
 
+    //是否已保存或分享
     private boolean isSaved = false;
     private boolean isShared = false;
 
@@ -73,18 +77,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private EditImageView mEditImageView;
     private ImageButton mColorPanel;
     private ImageButton mBrush;
-    private ImageButton mUndo;
-    private ImageButton mDelete;
-    private ImageButton mFilter;
-    private ImageButton mDetails;
-    private ImageButton mCrop;
-    private ImageButton mDraw;
-    private ImageButton mOK;
-    private ImageButton mCancel;
-    private SeekBar hueSeekBar;
-    private SeekBar satSeekBar;
-    private SeekBar lumSeekBar;
-    private BubbleSeekBar rotateSeekBar;
     private LinearLayout detailsBar;
     private LinearLayout rotateBar;
     private LinearLayout filterBar;
@@ -150,13 +142,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         return true;
     }
 
-
     /**
      * 初始化界面
      */
     private void initView() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
-//        StatusBarUtil.setStatusBarColor(this, R.color.colorPrimary);
         isSaved = false;
         isShared = false;
         detailsBar = findViewById(R.id.details_bar);
@@ -170,32 +160,32 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mEditImageView = findViewById(R.id.iv_main);
         mBrush = findViewById(R.id.brush);
         mColorPanel = findViewById(R.id.color_panel);
-        mUndo = findViewById(R.id.undo);
-        mDelete = findViewById(R.id.delete);
+        ImageButton undo = findViewById(R.id.undo);
+        ImageButton delete = findViewById(R.id.delete);
 
         mBrush.setOnClickListener(this);
         mColorPanel.setOnClickListener(this);
-        mUndo.setOnClickListener(this);
-        mDelete.setOnClickListener(this);
+        undo.setOnClickListener(this);
+        delete.setOnClickListener(this);
 
-        mFilter = findViewById(R.id.filter);
-        mDetails = findViewById(R.id.details);
-        mCrop = findViewById(R.id.Crop);
-        mDraw = findViewById(R.id.Draw);
+        ImageButton filter = findViewById(R.id.filter);
+        ImageButton details = findViewById(R.id.details);
+        ImageButton crop = findViewById(R.id.Crop);
+        ImageButton draw = findViewById(R.id.Draw);
 
-        mFilter.setOnClickListener(this);
-        mDetails.setOnClickListener(this);
-        mCrop.setOnClickListener(this);
-        mDraw.setOnClickListener(this);
+        filter.setOnClickListener(this);
+        details.setOnClickListener(this);
+        crop.setOnClickListener(this);
+        draw.setOnClickListener(this);
 
-        mOK = findViewById(R.id.OK);
-        mCancel = findViewById(R.id.Cancel);
-        mOK.setOnClickListener(this);
-        mCancel.setOnClickListener(this);
+        ImageButton OK = findViewById(R.id.OK);
+        ImageButton cancel = findViewById(R.id.Cancel);
+        OK.setOnClickListener(this);
+        cancel.setOnClickListener(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -224,15 +214,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
             }
         });
-        hueSeekBar = findViewById(R.id.sb_hue);
-        satSeekBar = findViewById(R.id.sb_saturation);
-        lumSeekBar = findViewById(R.id.sb_lum);
-        rotateSeekBar = findViewById(R.id.sb_rotate);
+        SeekBar hueSeekBar = findViewById(R.id.sb_hue);
+        SeekBar satSeekBar = findViewById(R.id.sb_saturation);
+        SeekBar lumSeekBar = findViewById(R.id.sb_lum);
+        BubbleSeekBar rotateSeekBar = findViewById(R.id.sb_rotate);
         hueSeekBar.setMax(MAX_VALUE);
         lumSeekBar.setMax(MAX_VALUE);
         satSeekBar.setMax(MAX_VALUE);
-//        rotateSeekBar.setMax(180);
-//        rotateSeekBar.setMin(-180);
         rotateSeekBar.setProgress(0);
         hueSeekBar.setProgress(MID_VALUE);
         satSeekBar.setProgress(MID_VALUE);
@@ -262,6 +250,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
             }
         }));
+        hueSeekBar.setProgress(MID_VALUE);
+        satSeekBar.setProgress(MID_VALUE);
+        lumSeekBar.setProgress(MID_VALUE);
+        initPhoto();
+    }
+
+    private void initPhoto() {
         Bundle extras = getIntent().getExtras();
         assert extras != null;
         Uri photo;
@@ -273,9 +268,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
         mBitmap = PhotoUtils.ScaleImage(mBitmap, 2, 2);
         mEditImageView.loadImage(mBitmap);
-        hueSeekBar.setProgress(MID_VALUE);
-        satSeekBar.setProgress(MID_VALUE);
-        lumSeekBar.setProgress(MID_VALUE);
     }
 
     @Override
@@ -293,25 +285,18 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     public void onProgressChanged(SeekBar seekBar, int progress,
                                   boolean fromUser) {
         Log.d(TAG, "seekid:" + seekBar.getId() + ", progess" + progress);
-        boolean isChanged = false;
         switch (seekBar.getId()) {
             case R.id.sb_hue:
                 mHue = (progress - MID_VALUE) * 1.0F / MID_VALUE * 180;
-                isChanged = true;
                 break;
             case R.id.sb_saturation:
                 mSaturation = progress * 1.0F / MID_VALUE;
-                isChanged = true;
                 break;
             case R.id.sb_lum:
                 mLum = progress * 1.0F / MID_VALUE;
-                isChanged = true;
                 break;
         }
-        if (isChanged) {
-            mEditImageView.loadImage(PhotoUtils.handleImageEffect(mBitmap, mHue, mSaturation, mLum));
-        }
-
+        mEditImageView.loadImage(PhotoUtils.handleImageEffect(mBitmap, mHue, mSaturation, mLum));
     }
 
     //保存裁剪后的照片
@@ -344,6 +329,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 启动裁剪
+     * @param view
+     */
+    public void btnCrop(View view) {
+        if (CUT == 0) {
+            mEditImageView.setDrawMode(EditImageView.CROP);
+            rotateBar.setVisibility(View.GONE);
+            cropBar.setVisibility(View.GONE);
+        }
+        mEditImageView.setImageBitmap(mEditImageView.getImageBitmap());
+        CUT = 1 - CUT;
     }
 
     /**
@@ -518,16 +517,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         intent = Intent.createChooser(intent, title);
         startActivity(intent);
         isShared = true;
-    }
-
-    public void btnCrop(View view) {
-        if (CUT == 0) {
-            mEditImageView.setDrawMode(EditImageView.CROP);
-            rotateBar.setVisibility(View.GONE);
-            cropBar.setVisibility(View.GONE);
-        }
-        mEditImageView.setImageBitmap(mEditImageView.getImageBitmap());
-        CUT = 1 - CUT;
     }
 
 }
