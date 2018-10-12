@@ -411,6 +411,7 @@ public class EditImageView extends AppCompatImageView {
                 widthSize = mBitmap.getWidth();
             }
         }
+        Log.d(TAG,"onMeasure");
         setMeasuredDimension(widthSize, heightSize);
 
     }
@@ -497,7 +498,6 @@ public class EditImageView extends AppCompatImageView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         PointF midPoint = getMidPointOfFinger(event);
-
         float x;
         float y;
         if (mProportion != 0) {
@@ -572,6 +572,7 @@ public class EditImageView extends AppCompatImageView {
                 }
                 if (mMode == CROP) {
                     onActionMove(event.getX(), event.getY());
+                    //父组件不拦截事件
                     getParent().requestDisallowInterceptTouchEvent(true);
                     return true;
                 }
@@ -589,9 +590,7 @@ public class EditImageView extends AppCompatImageView {
                     // 检测是否需要回弹
                     if (mOpenRotateRevert || mOpenScaleRevert || mOpenTranslateRevert) {
                         mMatrix.getValues(mFromMatrixValue);/*设置矩阵动画初始值*/
-                        /* 旋转和缩放都会影响矩阵，进而影响后续需要使用到ImageRect的地方，
-                         * 所以检测顺序不能改变
-                         */
+
                         if (mOpenRotateRevert) checkRotation();
                         if (mOpenScaleRevert) checkScale();
                         if (mOpenTranslateRevert) checkBorder();
@@ -660,7 +659,6 @@ public class EditImageView extends AppCompatImageView {
         if (mPressedCropWindowEdgeSelector == null) {
             return;
         }
-
         x += mTouchOffset.x;
         y += mTouchOffset.y;
 
@@ -836,7 +834,6 @@ public class EditImageView extends AppCompatImageView {
         } else if (mScaleFactor > mMaxScaleFactor) {
             scaleFactor = mMaxScaleFactor / mScaleFactor;
         }
-
         mMatrix.postScale(scaleFactor, scaleFactor, scaleCenter.x, scaleCenter.y);
         mScaleFactor *= scaleFactor;
     }
@@ -1137,8 +1134,6 @@ public class EditImageView extends AppCompatImageView {
 
     /**
      * 初始化裁剪框
-     *
-     * @param bitmapRect
      */
     private void initCropWindow(@NonNull RectF bitmapRect) {
 
@@ -1154,10 +1149,6 @@ public class EditImageView extends AppCompatImageView {
     }
 
     //-------getter and setter---------
-
-    public void setmMaxScaleFactor(float mMaxScaleFactor) {
-        this.mMaxScaleFactor = mMaxScaleFactor;
-    }
 
     /**
      * 设置画笔大小

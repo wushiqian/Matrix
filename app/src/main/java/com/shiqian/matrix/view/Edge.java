@@ -1,11 +1,4 @@
 package com.shiqian.matrix.view;
-/*
- * 包名：Matrix
- * 文件名： Edge
- * 创建者：wushiqian
- * 创建时间 2018/10/9 8:30 PM
- * 描述： TODO//
- */
 
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -27,7 +20,6 @@ public enum Edge {
     //上下左右边界的的值
     private float mCoordinate;
 
-
     public void initCoordinate(float coordinate) {
         mCoordinate = coordinate;
     }
@@ -35,12 +27,11 @@ public enum Edge {
     /**
      * 随着手指的移动而改变坐标值
      *
-     * @param distance
+     * @param distance 距离
      */
     public void offset(float distance) {
         mCoordinate += distance;
     }
-
 
     public float getCoordinate() {
         return mCoordinate;

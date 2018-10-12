@@ -1,4 +1,4 @@
-package com.shiqian.matrix;
+package com.shiqian.matrix.ui;
 /*
  * 包名：Matrix
  * 文件名： SettingActivity
@@ -10,6 +10,9 @@ package com.shiqian.matrix;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import com.jaeger.library.StatusBarUtil;
+import com.shiqian.matrix.R;
+
 public class SettingActivity extends BaseActivity{
 
     @Override
@@ -20,6 +23,6 @@ public class SettingActivity extends BaseActivity{
     }
 
     private void initView() {
-
+        StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(R.color.zhihu_primary));
     }
 }

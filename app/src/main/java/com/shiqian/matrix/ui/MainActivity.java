@@ -1,14 +1,16 @@
-package com.shiqian.matrix;
+package com.shiqian.matrix.ui;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,17 +24,13 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.jaeger.library.StatusBarUtil;
+import com.shiqian.matrix.R;
 import com.shiqian.matrix.utils.FilterUtils;
 import com.shiqian.matrix.utils.PhotoUtils;
 import com.shiqian.matrix.view.EditImageView;
 import com.xw.repo.BubbleSeekBar;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
-import java.util.Calendar;
 import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
@@ -65,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private float mSaturation = 1f;
     private float mLum = 1f;
     private int MID_VALUE = 127;
-    private int MAX_VALUE = 255;
 
     //是否已保存或分享
     private boolean isSaved = false;
@@ -85,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private LinearLayout okBar;
     private LinearLayout mainBar;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * 初始化模式
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void initPaintMode() {
         mEditImageView.initializePen();
         mEditImageView.setPenSize(10);
@@ -146,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * 初始化界面
      */
     private void initView() {
-        StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
+        StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(R.color.zhihu_primary));
         isSaved = false;
         isShared = false;
         detailsBar = findViewById(R.id.details_bar);
@@ -218,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         SeekBar satSeekBar = findViewById(R.id.sb_saturation);
         SeekBar lumSeekBar = findViewById(R.id.sb_lum);
         BubbleSeekBar rotateSeekBar = findViewById(R.id.sb_rotate);
+        int MAX_VALUE = 255;
         hueSeekBar.setMax(MAX_VALUE);
         lumSeekBar.setMax(MAX_VALUE);
         satSeekBar.setMax(MAX_VALUE);
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress,
                                   boolean fromUser) {
-        Log.d(TAG, "seekid:" + seekBar.getId() + ", progess" + progress);
+        Log.d(TAG, "seekId:" + seekBar.getId() + ", progress" + progress);
         switch (seekBar.getId()) {
             case R.id.sb_hue:
                 mHue = (progress - MID_VALUE) * 1.0F / MID_VALUE * 180;
@@ -299,41 +299,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mEditImageView.loadImage(PhotoUtils.handleImageEffect(mBitmap, mHue, mSaturation, mLum));
     }
 
-    //保存裁剪后的照片
-    private void savePhoto(Uri croppedFileUri) {
-        //获取默认的下载目录
-        String downloadsDirectoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-        String filename = String.format("%d_%s", Calendar.getInstance().getTimeInMillis(), croppedFileUri.getLastPathSegment());
-        File saveFile = new File(downloadsDirectoryPath, filename);
-        //保存下载的图片
-        FileInputStream inStream = null;
-        FileOutputStream outStream = null;
-        FileChannel inChannel = null;
-        FileChannel outChannel = null;
-        try {
-            inStream = new FileInputStream(new File(croppedFileUri.getPath()));
-            outStream = new FileOutputStream(saveFile);
-            inChannel = inStream.getChannel();
-            outChannel = outStream.getChannel();
-            inChannel.transferTo(0, inChannel.size(), outChannel);
-            Toasty.success(this, "Success!", Toast.LENGTH_SHORT, true).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                outChannel.close();
-                outStream.close();
-                inChannel.close();
-                inStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     /**
      * 启动裁剪
-     * @param view
      */
     public void btnCrop(View view) {
         if (CUT == 0) {
@@ -377,11 +344,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mBitmap = PhotoUtils.rotateImage(mBitmap, 90);
     }
 
-    public void btnReRotate(View view) {
-        mEditImageView.loadImage(PhotoUtils.rotateImage(mBitmap, -90));
-        mBitmap = PhotoUtils.rotateImage(mBitmap, -90);
-    }
-
     public void btnScale(View view) {
         mEditImageView.loadImage(PhotoUtils.ScaleImage(mBitmap, 2, 2));
     }
@@ -390,6 +352,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mEditImageView.loadImage(PhotoUtils.ScaleImage(mBitmap, 0.5f, 0.5f));
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

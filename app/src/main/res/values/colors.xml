@@ -14,5 +14,6 @@
     <color name="app_color">#02b7be</color>
     <color name="black">#000000</color>
     <color name="viewfinder_mask">#3F51B5</color>
+    <color name="white">#FFFFFF</color>
 
 </resources>

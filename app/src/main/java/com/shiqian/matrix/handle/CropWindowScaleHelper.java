@@ -1,11 +1,4 @@
 package com.shiqian.matrix.handle;
-/*
- * 包名：Matrix
- * 文件名： CropWindowScaleHelper
- * 创建者：wushiqian
- * 创建时间 2018/10/9 8:30 PM
- * 描述： TODO//
- */
 
 import android.graphics.RectF;
 import android.support.annotation.NonNull;

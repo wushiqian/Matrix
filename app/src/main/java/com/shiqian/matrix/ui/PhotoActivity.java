@@ -1,4 +1,4 @@
-package com.shiqian.matrix;
+package com.shiqian.matrix.ui;
 /*
  * 包名：Matrix
  * 文件名： PhotoActivity
@@ -11,6 +11,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,9 +30,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.jaeger.library.StatusBarUtil;
+import com.shiqian.matrix.R;
 import com.shiqian.matrix.adapter.PhotoAdapter;
 import com.shiqian.matrix.utils.ShareUtils;
-import com.shiqian.matrix.view.PopupChoisePhoto;
+import com.shiqian.matrix.view.PopupChoosePhoto;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 import com.zhihu.matisse.Matisse;
@@ -51,7 +53,6 @@ public class PhotoActivity extends AppCompatActivity {
      * DATA
      */
     private static final String TAG = "PhotoActivity";
-    private List<Uri> mSelected;
 
     private int REQUEST_CODE_CHOOSE = 2;
     private static final int REQUEST_PERMISSION_CODE = 0;
@@ -71,11 +72,11 @@ public class PhotoActivity extends AppCompatActivity {
 
     public static final int TAKE_PHOTO = 1;
 
-    private LinearLayout parentLaoyout;
+    private LinearLayout parentLayout;
 
     private List<Uri> uri_list = new ArrayList<>();//图片集合
 
-    private PopupChoisePhoto choisePhotoPopup;//选择相机or图片
+    private PopupChoosePhoto choosePhotoPopup;//选择相机or图片
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +86,7 @@ public class PhotoActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        StatusBarUtil.setColor(this, getResources().getColor(R.color.zhihu_primary));
+        StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(R.color.zhihu_primary));
         int uriSize = ShareUtils.getInt(this, ShareUtils.NAME, uri_list.size());
         Uri photo;
         if (uriSize != 0) {
@@ -119,7 +120,7 @@ public class PhotoActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PhotoActivity.this,SettingActivity.class);
+                Intent intent = new Intent(PhotoActivity.this, SettingActivity.class);
                 startActivity(intent);
             }
         });
@@ -127,13 +128,13 @@ public class PhotoActivity extends AppCompatActivity {
 
     //选择相机or图片
     private void showChoisePhoto() {
-        parentLaoyout = findViewById(R.id.add_main);
-        choisePhotoPopup = new PopupChoisePhoto(this, choisePhotoCilck, parentLaoyout, whichPhoto, photosSize);
-        choisePhotoPopup.showPopupWindow(parentLaoyout);
-        parentLaoyout.setAlpha((float) 0.3);
+        parentLayout = findViewById(R.id.add_main);
+        choosePhotoPopup = new PopupChoosePhoto(this, choosePhotoClick, parentLayout, whichPhoto, photosSize);
+        choosePhotoPopup.showPopupWindow(parentLayout);
+        parentLayout.setAlpha((float) 0.3);
     }
 
-    private android.view.View.OnClickListener choisePhotoCilck = new android.view.View.OnClickListener() {
+    private android.view.View.OnClickListener choosePhotoClick = new android.view.View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
@@ -167,10 +168,10 @@ public class PhotoActivity extends AppCompatActivity {
                     if (uri_list.size() != 0) {
                         uri_list.remove(whichPhoto);
                         mPhotoAdapter.notifyDataSetChanged();
-                        choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                        choosePhotoPopup.dismissPopupWindow(parentLayout);
                     } else {
                         Toasty.info(PhotoActivity.this, "暂无图片,请先添加图片", Toast.LENGTH_SHORT).show();
-                        choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                        choosePhotoPopup.dismissPopupWindow(parentLayout);
                     }
                     break;
                 case R.id.btn_img_edit:
@@ -178,13 +179,12 @@ public class PhotoActivity extends AppCompatActivity {
                     Intent intent = new Intent(PhotoActivity.this, MainActivity.class);
                     intent.putExtra("Photo", uri_list.get(whichPhoto).toString());
                     startActivity(intent);
-                    choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                    choosePhotoPopup.dismissPopupWindow(parentLayout);
                     break;
                 case R.id.btn_cancel:
                     //取消
-                    choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                    choosePhotoPopup.dismissPopupWindow(parentLayout);
                     break;
-
                 default:
                     break;
             }
@@ -233,7 +233,7 @@ public class PhotoActivity extends AppCompatActivity {
                             .maxSelectable(1)
                             .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.media_big_size))
                             .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
-                            .thumbnailScale(0.85f)
+                            .thumbnailScale(1f)
                             .imageEngine(new com.shiqian.photoedit.utils.MatisseGlide())
                             .forResult(REQUEST_CODE_CHOOSE);
                 } else {
@@ -248,9 +248,9 @@ public class PhotoActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
-            mSelected = Matisse.obtainResult(data);
-            Log.d("Matisse", "mSelected: " + mSelected);
-            startCrop(mSelected.get(0));
+            List<Uri> selected = Matisse.obtainResult(data);
+            Log.d("Matisse", "mSelected: " + selected);
+            startCrop(selected.get(0));
         }
         if (resultCode == RESULT_OK) {
             //裁切成功
@@ -267,7 +267,7 @@ public class PhotoActivity extends AppCompatActivity {
                 }
                 //刷新数据  关闭popupwidow
                 mPhotoAdapter.notifyDataSetChanged();
-                choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                choosePhotoPopup.dismissPopupWindow(parentLayout);
             }
         }
         //裁切失败
@@ -279,18 +279,9 @@ public class PhotoActivity extends AppCompatActivity {
                 //是否正常拍照
                 if (resultCode == RESULT_OK) {
                     startCrop(imageUri);
-                    //判断是添加照片还是更新照片
-//                    if (isAdd) {
-//                        uri_list.add(imageUri);
-//                    } else {
-//                        uri_list.set(whichPhoto, imageUri);
-//                    }
-//                    //刷新数据  关闭popupwidow
-//                    mPhotoAdapter.notifyDataSetChanged();
-//                    choisePhotoPopup.dismissPopupWindow(parentLaoyout);
                 } else if (resultCode == RESULT_CANCELED) {
                     //取消拍照
-                    choisePhotoPopup.dismissPopupWindow(parentLaoyout);
+                    choosePhotoPopup.dismissPopupWindow(parentLayout);
                 }
                 break;
         }
@@ -315,12 +306,12 @@ public class PhotoActivity extends AppCompatActivity {
         //设置最大缩放比例
         options.setMaxScaleMultiplier(4);
         // 设置图片压缩质量
-//        options.setCompressionQuality(100);
+        options.setCompressionQuality(100);
         //设置裁剪框横竖线的颜色
-//        options.setCropGridColor(Color.GREEN);
+        options.setCropGridColor(Color.GREEN);
         uCrop.withOptions(options);
         uCrop = uCrop.useSourceImageAspectRatio();
-        uCrop.withMaxResultSize(1600, 1600).start(this);
+        uCrop.withMaxResultSize(3200, 3200).start(this);
     }
 
     @Override

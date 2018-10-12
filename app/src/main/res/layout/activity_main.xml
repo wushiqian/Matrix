@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     android:background="@color/lightBlack"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@android:color/transparent"
+        android:background="@color/zhihu_primary"
         android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
@@ -56,7 +56,9 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="色调：  " />
+                        android:textColor="@color/zhihu_primary"
+                        android:text="色调：  "
+                        android:textStyle="bold" />
 
                     <android.support.v7.widget.AppCompatSeekBar
                         android:id="@+id/sb_hue"
@@ -74,7 +76,9 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="饱和度:" />
+                        android:textColor="@color/zhihu_primary"
+                        android:text="饱和度:"
+                        android:textStyle="bold" />
 
                     <android.support.v7.widget.AppCompatSeekBar
                         android:id="@+id/sb_saturation"
@@ -92,7 +96,9 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="亮度：  " />
+                        android:textColor="@color/zhihu_primary"
+                        android:text="亮度：  "
+                        android:textStyle="bold" />
 
                     <android.support.v7.widget.AppCompatSeekBar
                         android:id="@+id/sb_lum"
@@ -114,6 +120,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/zhihu_primary"
+                    android:textStyle="bold"
                     android:text="旋转" />
 
                 <com.xw.repo.BubbleSeekBar
@@ -126,7 +134,7 @@
                     app:bsb_min="-180"
                     app:bsb_progress="0"
                     app:bsb_second_track_color="@color/color_red"
-                    app:bsb_section_count="9"
+                    app:bsb_section_count="0"
                     app:bsb_section_text_position="bottom_sides"
                     app:bsb_show_progress_in_float="true"
                     app:bsb_show_section_mark="true"
@@ -150,36 +158,48 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnNegative"
-                        android:text="底片效果" />
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
+                        android:text="底片" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnOld"
-                        android:text="老照片效果" />
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
+                        android:text="老照片" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnEmboss"
-                        android:text="浮雕效果" />
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
+                        android:text="浮雕" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnPolaroid"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="宝丽来" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnCool"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="怀旧" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnNeon"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="霓虹" />
 
                 </LinearLayout>
@@ -200,30 +220,32 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnRotate"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="@string/rotate" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="btnReRotate"
-                        android:text="@string/rerotate" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:onClick="btnScale"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="放大两倍" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnReScale"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="缩小一半" />
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:onClick="btnCrop"
+                        android:background="@drawable/btn_bottom_confirm_bg"
+                        android:layout_margin="5dip"
                         android:text="裁剪" />
 
                 </LinearLayout>

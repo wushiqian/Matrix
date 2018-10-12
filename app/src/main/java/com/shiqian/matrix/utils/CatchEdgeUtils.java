@@ -1,11 +1,4 @@
 package com.shiqian.matrix.utils;
-/*
- * 包名：Matrix
- * 文件名： CatchEdgeUtils
- * 创建者：wushiqian
- * 创建时间 2018/10/9 8:27 PM
- * 描述： TODO//
- */
 
 import android.graphics.PointF;
 import android.support.annotation.NonNull;

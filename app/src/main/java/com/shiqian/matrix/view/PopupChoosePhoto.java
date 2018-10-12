@@ -18,41 +18,33 @@ import android.widget.PopupWindow;
 
 import com.shiqian.matrix.R;
 
-public class PopupChoisePhoto extends PopupWindow {
-
-    private View view;
-    private Button choosePhoto;
-    private Button takePhoto;
-    private Button cancle;
-    private Button del_select;
-    private Button img_zoom;
-
+public class PopupChoosePhoto extends PopupWindow {
 
     // layout : popupwindow显示时方便设置背景
     // putPos ：根据传入的数据长度，判断显示删除和预览按钮
-    public PopupChoisePhoto(Activity context, View.OnClickListener btnOnClick,
+    public PopupChoosePhoto(Activity context, View.OnClickListener btnOnClick,
                             final View layout, int whichPhoto, int photoSize) {
         super(context);
         LayoutInflater inflater = LayoutInflater.from(context);
-        view = inflater.inflate(R.layout.popup_choice_photo, null);
+        View view = inflater.inflate(R.layout.popup_choice_photo, null);
 
-        choosePhoto = view.findViewById(R.id.choosePhoto);
-        img_zoom = view.findViewById(R.id.btn_img_edit);
-        takePhoto = view.findViewById(R.id.takePhoto);
-        cancle = view.findViewById(R.id.btn_cancel);
-        del_select = view.findViewById(R.id.btn_del_select);
+        Button choosePhoto = view.findViewById(R.id.choosePhoto);
+        Button img_edit = view.findViewById(R.id.btn_img_edit);
+        Button takePhoto = view.findViewById(R.id.takePhoto);
+        Button cancle = view.findViewById(R.id.btn_cancel);
+        Button del_select = view.findViewById(R.id.btn_del_select);
         del_select.setOnClickListener(btnOnClick);
         choosePhoto.setOnClickListener(btnOnClick);
         takePhoto.setOnClickListener(btnOnClick);
         cancle.setOnClickListener(btnOnClick);
-        img_zoom.setOnClickListener(btnOnClick);
+        img_edit.setOnClickListener(btnOnClick);
 
         //判断是否显示“删除此图片”和“预览按钮”
         if (photoSize == 0 || whichPhoto == photoSize) {
-            img_zoom.setVisibility(View.GONE);
+            img_edit.setVisibility(View.GONE);
             del_select.setVisibility(View.GONE);
         } else {
-            img_zoom.setVisibility(View.VISIBLE);
+            img_edit.setVisibility(View.VISIBLE);
             del_select.setVisibility(View.VISIBLE);
         }
 
